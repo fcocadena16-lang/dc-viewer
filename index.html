@@ -18,7 +18,29 @@ body{margin:0;padding:max(18px,env(safe-area-inset-top)) 14px max(24px,env(safe-
 .panel,.panelVisor{background:#202020;border:1px solid #2b2b2b;border-radius:14px;padding:14px}
 .cabeceraLista{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
 .cabeceraLista strong{font-size:17px;letter-spacing:.5px}
+
 .accionesCabecera{display:flex;gap:8px}
+.botonIcono svg{width:23px;height:23px}
+.barraBusqueda{display:none;align-items:center;gap:8px;margin:-2px 0 12px}
+.barraBusqueda.visible{display:flex}
+.campoBusqueda{flex:1;min-width:0;height:44px;border:1px solid #505050;border-radius:10px;background:#161616;color:#fff;padding:0 12px;font-size:16px;outline:none}
+.campoBusqueda:focus{border-color:#9a9a9a}
+.limpiarBusqueda{display:none;width:38px;height:38px;border:0;border-radius:9px;background:#3a3a3a;color:#fff;font-size:23px;line-height:1;cursor:pointer}
+.limpiarBusqueda.visible{display:inline-flex;align-items:center;justify-content:center}
+.grupoCarpeta{display:flex;flex-direction:column;gap:7px}
+.carpeta{width:100%;display:flex;align-items:center;gap:11px;text-align:left;background:#292929;border:1px solid #484848;color:#fff;border-radius:10px;padding:11px 12px;cursor:pointer}
+.carpeta:active{transform:scale(.995)}
+.carpetaIcono{width:27px;height:27px;flex:0 0 auto;display:flex;align-items:center;justify-content:center}
+.carpetaIcono svg{width:27px;height:27px}
+.carpetaTexto{flex:1;min-width:0}
+.carpetaNombre{display:block;font-size:16px;font-weight:800;word-break:break-word}
+.carpetaMeta{display:block;color:#aaa;font-size:12px;margin-top:3px}
+.carpetaFlecha{font-size:27px;line-height:1;color:#bbb;transition:transform .16s ease}
+.grupoCarpeta.abierta .carpetaFlecha{transform:rotate(90deg)}
+.contenidoCarpeta{display:none;flex-direction:column;gap:7px;padding-left:17px}
+.grupoCarpeta.abierta .contenidoCarpeta{display:flex}
+.contenidoCarpeta .archivo{background:#262626}
+
 .botonIcono{width:46px;height:46px;border:0;border-radius:11px;background:#eee;color:#111;font-size:27px;line-height:1;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
 .botonIcono:active{transform:scale(.96)}.botonIcono.activo{background:#00c853;color:#07130a}
 .lista{display:flex;flex-direction:column;gap:8px}
@@ -86,8 +108,17 @@ canvas{min-height:430px}
       <strong>PRUEBAS GUARDADAS</strong>
       <div class="accionesCabecera">
         <button id="btnAgregar" class="botonIcono" type="button" aria-label="Cargar pruebas" title="Cargar pruebas">＋</button>
+        <button id="btnBuscar" class="botonIcono" type="button" aria-label="Buscar pruebas" title="Buscar pruebas">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="currentColor" d="M10.5 4a6.5 6.5 0 1 0 3.98 11.64L19.84 21 21 19.84l-5.36-5.36A6.5 6.5 0 0 0 10.5 4Zm0 2a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9Z"/>
+          </svg>
+        </button>
         <button id="btnEditar" class="botonIcono" type="button" aria-label="Seleccionar pruebas" title="Seleccionar pruebas">✓</button>
       </div>
+    </div>
+    <div id="barraBusqueda" class="barraBusqueda">
+      <input id="buscarPrueba" class="campoBusqueda" type="search" placeholder="Buscar por nombre" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <button id="btnLimpiarBusqueda" class="limpiarBusqueda" type="button" aria-label="Limpiar búsqueda" title="Limpiar búsqueda">×</button>
     </div>
     <input id="selectorCarpeta" type="file" accept=".csv,text/csv,text/plain" webkitdirectory directory multiple>
     <div id="lista" class="lista"></div>
@@ -134,7 +165,7 @@ canvas{min-height:430px}
 <script>
 "use strict";
 const DB_NAME="Visor130VDB", DB_VERSION=1, STORE="pruebas";
-let db=null, pruebaActual=null, puntosActuales=[], modoSeleccion=false, seleccionadas=new Set(), ordenPruebas=[], indicePruebaActual=-1;
+let db=null, pruebaActual=null, puntosActuales=[], modoSeleccion=false, seleccionadas=new Set(), ordenPruebas=[], indicePruebaActual=-1, textoBusqueda="", busquedaVisible=false; const carpetasAbiertas=new Set();
 
 function msg(t,ms=1600){const e=document.getElementById("mensaje");e.textContent=t;e.style.display="block";clearTimeout(msg.timer);msg.timer=setTimeout(()=>{e.style.display="none";e.textContent=""},ms)}
 function abrirDB(){return new Promise((ok,no)=>{const r=indexedDB.open(DB_NAME,DB_VERSION);r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains(STORE)){const s=d.createObjectStore(STORE,{keyPath:"id",autoIncrement:true});s.createIndex("nombre","nombre",{unique:false});s.createIndex("importado","importado",{unique:false})}};r.onsuccess=()=>{db=r.result;ok(db)};r.onerror=()=>no(r.error)})}
@@ -145,6 +176,38 @@ function uno(id){return new Promise((ok,no)=>{const r=st().get(Number(id));r.ons
 function borrar(id){return new Promise((ok,no)=>{const r=st("readwrite").delete(Number(id));r.onsuccess=()=>ok();r.onerror=()=>no(r.error)})}
 async function hash(texto){const b=new TextEncoder().encode(texto),d=await crypto.subtle.digest("SHA-256",b);return Array.from(new Uint8Array(d)).map(x=>x.toString(16).padStart(2,"0")).join("")}
 const norm=n=>String(n||"").trim().toLowerCase();
+
+
+function infoArchivo(nombre){
+  const limpio=String(nombre||"").trim();
+  const sinExt=limpio.replace(/\.csv$/i,"");
+  const m=sinExt.match(/^(.*)_(\d{4}-\d{2}-\d{2})(?:_(\d+))?$/);
+
+  if(m){
+    return{
+      subestacion:m[1],
+      fecha:m[2],
+      repeticion:m[3]?Number(m[3]):1
+    };
+  }
+
+  return{
+    subestacion:sinExt,
+    fecha:"",
+    repeticion:1
+  };
+}
+
+function claveSubestacion(nombre){
+  return norm(infoArchivo(nombre).subestacion);
+}
+
+function coincideBusqueda(p,q){
+  if(!q)return true;
+  const info=infoArchivo(p.nombre);
+  const texto=(p.nombre+" "+info.subestacion).toLowerCase();
+  return texto.includes(q);
+}
 
 function csvPuntos(texto){
   const lineas=texto.replace(/^\uFEFF/,"").split(/\r?\n/),r=[];
@@ -205,27 +268,80 @@ async function importar(files){
       nombres.add(n);hashes.add(h);a++;
     }catch{i++}
   }
+  cacheAdyacentes.clear();
   await lista();
   let t=`${a} ${a===1?"prueba agregada":"pruebas agregadas"}`;if(d)t+=` · ${d} duplicada${d===1?"":"s"} omitida${d===1?"":"s"}`;if(i)t+=` · ${i} inválida${i===1?"":"s"}`;msg(t)
 }
 
 async function lista(){
-  const cont=document.getElementById("lista"),ps=await todos();
-  ps.sort((a,b)=>b.importado-a.importado);
-  ordenPruebas = ps.map(p => Number(p.id));
+  const cont=document.getElementById("lista");
+  const todas=await todos();
+
+  todas.sort((a,b)=>b.importado-a.importado);
+
+  // Limpiar selecciones de archivos que ya no existen.
+  const idsExistentes=new Set(todas.map(p=>Number(p.id)));
+  for(const id of [...seleccionadas]){
+    if(!idsExistentes.has(Number(id)))seleccionadas.delete(Number(id));
+  }
+
+  const q=textoBusqueda.trim().toLowerCase();
+
+  // Si la búsqueda coincide con el nombre de la subestación, se muestran
+  // todas sus pruebas. Si coincide con un archivo concreto, se muestra ese archivo.
+  const estacionesQueCoinciden=new Set();
+  if(q){
+    for(const p of todas){
+      const sub=infoArchivo(p.nombre).subestacion.toLowerCase();
+      if(sub.includes(q))estacionesQueCoinciden.add(claveSubestacion(p.nombre));
+    }
+  }
+
+  const ps=todas.filter(p=>{
+    if(!q)return true;
+    const k=claveSubestacion(p.nombre);
+    return estacionesQueCoinciden.has(k) || coincideBusqueda(p,q);
+  });
+
   cont.innerHTML="";
 
-  // Remove ids that no longer exist
-  const idsExistentes=new Set(ps.map(p=>Number(p.id)));
-  for(const id of [...seleccionadas])if(!idsExistentes.has(Number(id)))seleccionadas.delete(Number(id));
-
   if(!ps.length){
-    cont.innerHTML='<div class="vacio">No hay pruebas guardadas.</div>';
+    cont.innerHTML='<div class="vacio">'+(q?"No se encontraron pruebas.":"No hay pruebas guardadas.")+'</div>';
+    cont.classList.toggle("modoSeleccion",modoSeleccion);
     actualizarAccionesSeleccion();
     return;
   }
 
+  // Agrupar por subestación.
+  const grupos=new Map();
+
   for(const p of ps){
+    const info=infoArchivo(p.nombre);
+    const clave=norm(info.subestacion);
+
+    if(!grupos.has(clave)){
+      grupos.set(clave,{
+        clave,
+        nombre:info.subestacion,
+        pruebas:[]
+      });
+    }
+
+    grupos.get(clave).pruebas.push(p);
+  }
+
+  // Orden de los grupos: por la prueba más reciente de cada grupo.
+  const ordenGrupos=[...grupos.values()].sort((a,b)=>{
+    const aa=Math.max(...a.pruebas.map(p=>Number(p.importado)||0));
+    const bb=Math.max(...b.pruebas.map(p=>Number(p.importado)||0));
+    return bb-aa;
+  });
+
+  // El carrusel seguirá el mismo orden visual: grupo por grupo,
+  // y dentro de cada carpeta de la más reciente a la más antigua.
+  ordenPruebas=[];
+
+  const crearFilaPrueba=(p)=>{
     const f=document.createElement("div");
     f.className="filaPrueba";
 
@@ -244,7 +360,13 @@ async function lista(){
 
     const cambiar=()=>{
       const id=Number(p.id);
-      if(seleccionadas.has(id))seleccionadas.delete(id);else seleccionadas.add(id);
+
+      if(seleccionadas.has(id)){
+        seleccionadas.delete(id);
+      }else{
+        seleccionadas.add(id);
+      }
+
       cb.checked=seleccionadas.has(id);
       b.classList.toggle("seleccionado",cb.checked);
       actualizarAccionesSeleccion();
@@ -252,18 +374,87 @@ async function lista(){
 
     cb.onchange=()=>{
       const id=Number(p.id);
-      if(cb.checked)seleccionadas.add(id);else seleccionadas.delete(id);
+
+      if(cb.checked){
+        seleccionadas.add(id);
+      }else{
+        seleccionadas.delete(id);
+      }
+
       b.classList.toggle("seleccionado",cb.checked);
       actualizarAccionesSeleccion();
     };
 
     b.onclick=()=>{
-      if(modoSeleccion)cambiar();
-      else abrir(p.id);
+      if(modoSeleccion){
+        cambiar();
+      }else{
+        abrir(p.id);
+      }
     };
 
     f.append(cb,b);
-    cont.appendChild(f);
+    return f;
+  };
+
+  for(const grupo of ordenGrupos){
+    grupo.pruebas.sort((a,b)=>b.importado-a.importado);
+
+    for(const p of grupo.pruebas){
+      ordenPruebas.push(Number(p.id));
+    }
+
+    // Solo crear carpeta cuando existen 2 o más archivos de la misma subestación.
+    if(grupo.pruebas.length>=2){
+      const caja=document.createElement("div");
+      caja.className="grupoCarpeta";
+
+      // Durante una búsqueda la carpeta se abre automáticamente.
+      const abierta=q || carpetasAbiertas.has(grupo.clave);
+      caja.classList.toggle("abierta",abierta);
+
+      const carpeta=document.createElement("button");
+      carpeta.type="button";
+      carpeta.className="carpeta";
+      carpeta.innerHTML=`
+        <span class="carpetaIcono" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path fill="currentColor" d="M3 6.5A2.5 2.5 0 0 1 5.5 4H10l2 2h6.5A2.5 2.5 0 0 1 21 8.5v8A2.5 2.5 0 0 1 18.5 19h-13A2.5 2.5 0 0 1 3 16.5v-10Z"/>
+          </svg>
+        </span>
+        <span class="carpetaTexto">
+          <span class="carpetaNombre"></span>
+          <span class="carpetaMeta"></span>
+        </span>
+        <span class="carpetaFlecha" aria-hidden="true">›</span>`;
+
+      carpeta.querySelector(".carpetaNombre").textContent=grupo.nombre;
+      carpeta.querySelector(".carpetaMeta").textContent=
+        grupo.pruebas.length+" "+(grupo.pruebas.length===1?"prueba":"pruebas");
+
+      const contenido=document.createElement("div");
+      contenido.className="contenidoCarpeta";
+
+      for(const p of grupo.pruebas){
+        contenido.appendChild(crearFilaPrueba(p));
+      }
+
+      carpeta.onclick=()=>{
+        const ahoraAbierta=!caja.classList.contains("abierta");
+        caja.classList.toggle("abierta",ahoraAbierta);
+
+        if(ahoraAbierta){
+          carpetasAbiertas.add(grupo.clave);
+        }else{
+          carpetasAbiertas.delete(grupo.clave);
+        }
+      };
+
+      caja.append(carpeta,contenido);
+      cont.appendChild(caja);
+    }else{
+      cont.appendChild(crearFilaPrueba(grupo.pruebas[0]));
+    }
   }
 
   cont.classList.toggle("modoSeleccion",modoSeleccion);
@@ -349,6 +540,7 @@ async function borrarSeleccionadas(){
     "visible"
   );
 
+  cacheAdyacentes.clear();
   await lista();
 
   // No dejar mensaje abajo después de borrar.
@@ -738,6 +930,43 @@ function terminarGestoVisor(event){
   }
 }
 
+
+function actualizarBotonLimpiarBusqueda(){
+  document.getElementById("btnLimpiarBusqueda").classList.toggle(
+    "visible",
+    textoBusqueda.length>0
+  );
+}
+
+function alternarBusqueda(){
+  busquedaVisible=!busquedaVisible;
+
+  const barra=document.getElementById("barraBusqueda");
+  const btn=document.getElementById("btnBuscar");
+  const campo=document.getElementById("buscarPrueba");
+
+  barra.classList.toggle("visible",busquedaVisible);
+  btn.classList.toggle("activo",busquedaVisible);
+
+  if(busquedaVisible){
+    setTimeout(()=>campo.focus(),50);
+  }else{
+    textoBusqueda="";
+    campo.value="";
+    actualizarBotonLimpiarBusqueda();
+    lista();
+  }
+}
+
+function limpiarBusqueda(){
+  textoBusqueda="";
+  const campo=document.getElementById("buscarPrueba");
+  campo.value="";
+  actualizarBotonLimpiarBusqueda();
+  lista();
+  campo.focus();
+}
+
 function edit(){
   modoSeleccion=!modoSeleccion;
   if(!modoSeleccion)seleccionadas.clear();
@@ -746,6 +975,13 @@ function edit(){
   lista();
 }
 
+document.getElementById("btnBuscar").onclick=alternarBusqueda;
+document.getElementById("buscarPrueba").oninput=e=>{
+  textoBusqueda=String(e.target.value||"");
+  actualizarBotonLimpiarBusqueda();
+  lista();
+};
+document.getElementById("btnLimpiarBusqueda").onclick=limpiarBusqueda;
 document.getElementById("btnAgregar").onclick=()=>document.getElementById("selectorCarpeta").click();
 document.getElementById("selectorCarpeta").onchange=async e=>{const f=[...e.target.files];e.target.value="";if(f.length)await importar(f)};
 document.getElementById("btnEditar").onclick=edit;
@@ -765,7 +1001,7 @@ document.addEventListener("keydown", event => {
 });
 window.addEventListener("resize",()=>{if(puntosActuales.length)dibujar(puntosActuales)});
 
-(async()=>{try{await abrirDB();await lista()}catch{msg("No se pudo abrir el almacenamiento local.")}if("serviceWorker"in navigator){try{await navigator.serviceWorker.register("./sw.js?v=9", { updateViaCache: "none" })}catch{}}})();
+(async()=>{try{await abrirDB();await lista()}catch{msg("No se pudo abrir el almacenamiento local.")}if("serviceWorker"in navigator){try{await navigator.serviceWorker.register("./sw.js?v=10", { updateViaCache: "none" })}catch{}}})();
 </script>
 </body>
 </html>
