@@ -389,6 +389,7 @@ async function lista(){
       if(modoSeleccion){
         cambiar();
       }else{
+        cerrarBusquedaAlAbrir();
         abrir(p.id);
       }
     };
@@ -576,7 +577,7 @@ async function abrir(id){
   const est=document.getElementById("estabilidad");if(a.estabilizada){est.style.display="block";est.textContent="ESTABILIZADO — "+Number(a.meseta).toFixed(2)+" V"}else{est.style.display="none";est.textContent=""}
   precargarAdyacentes();
 }
-function cerrar(){quitarPreview();const v=document.getElementById("visor");v.classList.remove("activo");v.setAttribute("aria-hidden","true");document.body.style.overflow="";pruebaActual=null;puntosActuales=[];indicePruebaActual=-1;}
+function cerrar(){quitarPreview();const v=document.getElementById("visor");v.classList.remove("activo");v.setAttribute("aria-hidden","true");document.body.style.overflow="";pruebaActual=null;puntosActuales=[];indicePruebaActual=-1;lista();}
 
 function navegarPrueba(direccion){
   if(!pruebaActual || indicePruebaActual < 0 || ordenPruebas.length === 0)return;
@@ -958,6 +959,23 @@ function alternarBusqueda(){
   }
 }
 
+
+function cerrarBusquedaAlAbrir(){
+  if(!busquedaVisible)return;
+
+  busquedaVisible=false;
+  textoBusqueda="";
+
+  const barra=document.getElementById("barraBusqueda");
+  const btn=document.getElementById("btnBuscar");
+  const campo=document.getElementById("buscarPrueba");
+
+  barra.classList.remove("visible");
+  btn.classList.remove("activo");
+  campo.value="";
+  actualizarBotonLimpiarBusqueda();
+}
+
 function limpiarBusqueda(){
   textoBusqueda="";
   const campo=document.getElementById("buscarPrueba");
@@ -1001,7 +1019,7 @@ document.addEventListener("keydown", event => {
 });
 window.addEventListener("resize",()=>{if(puntosActuales.length)dibujar(puntosActuales)});
 
-(async()=>{try{await abrirDB();await lista()}catch{msg("No se pudo abrir el almacenamiento local.")}if("serviceWorker"in navigator){try{await navigator.serviceWorker.register("./sw.js?v=10", { updateViaCache: "none" })}catch{}}})();
+(async()=>{try{await abrirDB();await lista()}catch{msg("No se pudo abrir el almacenamiento local.")}if("serviceWorker"in navigator){try{await navigator.serviceWorker.register("./sw.js?v=11", { updateViaCache: "none" })}catch{}}})();
 </script>
 </body>
 </html>
