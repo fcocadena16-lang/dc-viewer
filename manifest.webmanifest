@@ -1,0 +1,24 @@
+{
+  "name": "Visor de Pruebas 130 VDC",
+  "short_name": "Visor 130 V",
+  "description": "Visor offline de archivos CSV generados por el medidor de descarga 130 VDC.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#101010",
+  "theme_color": "#101010",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
