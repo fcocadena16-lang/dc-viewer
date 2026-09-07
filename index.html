@@ -46,7 +46,7 @@ body{margin:0;padding:max(18px,env(safe-area-inset-top)) 14px max(24px,env(safe-
 .botonBorrarSeleccion:disabled{opacity:.35}
 .vacio{text-align:center;color:#999;padding:22px 6px}input[type=file]{display:none}
 #visor{display:none;position:fixed;inset:0;z-index:1000;overflow-y:auto;background:#101010;padding:max(66px,calc(env(safe-area-inset-top) + 52px)) 8px max(22px,env(safe-area-inset-bottom))}
-#visor.activo{display:block}.visorContenido{max-width:1040px;margin:0 auto}
+#visor.activo{display:block}.visorContenido{transition:opacity .12s ease;max-width:1040px;margin:0 auto}
 .cerrarVisor{position:fixed;top:max(12px,env(safe-area-inset-top));right:14px;z-index:1100;width:46px;height:46px;border:0;border-radius:50%;background:#eee;color:#111;font-size:27px;font-weight:700;line-height:1;cursor:pointer}
 #nombrePrueba{text-align:center;font-size:18px;font-weight:750;word-break:break-word;margin:0 50px 16px}
 .panelVisor{margin-bottom:14px}canvas{display:block;width:100%;height:auto;min-height:360px;background:white;border-radius:10px}
@@ -63,7 +63,7 @@ body{padding-left:12px;padding-right:12px}
 #nombrePrueba{margin-left:54px;margin-right:54px}
 }
 @media(orientation:landscape){
-.visorContenido{max-width:1180px}
+.visorContenido{transition:opacity .12s ease;max-width:1180px}
 canvas{min-height:430px}
 }
 </style>
@@ -354,7 +354,10 @@ async function borrarSeleccionadas(){
 
 async function abrir(id){
   const p=await uno(id);if(!p)return;const d=csvPuntos(p.contenido);if(!d.length){msg("El CSV no contiene datos válidos.");return}
-  pruebaActual=p;puntosActuales=d;document.getElementById("nombrePrueba").textContent=p.nombre;
+  pruebaActual=p;
+  puntosActuales=d;
+  indicePruebaActual=ordenPruebas.indexOf(Number(p.id));
+  document.getElementById("nombrePrueba").textContent=p.nombre;
   const v=document.getElementById("visor");v.classList.add("activo");v.setAttribute("aria-hidden","false");document.body.style.overflow="hidden";v.scrollTop=0;dibujar(d);
   const a=analizar(d);document.getElementById("rMin").textContent=fv(a.minimo);document.getElementById("rTMin").textContent=ft(a.tiempoMinimo);
   document.getElementById("rMeseta").textContent=fv(a.meseta);document.getElementById("rTEstable").textContent=ft(a.tiempoEstabilizacion);
@@ -363,7 +366,7 @@ async function abrir(id){
   document.getElementById("r20").textContent=fv(valorSegundo(d,1200));document.getElementById("r30").textContent=fv(valorSegundo(d,1800));
   const est=document.getElementById("estabilidad");if(a.estabilizada){est.style.display="block";est.textContent="ESTABILIZADO — "+Number(a.meseta).toFixed(2)+" V"}else{est.style.display="none";est.textContent=""}
 }
-function cerrar(){const v=document.getElementById("visor");v.classList.remove("activo");v.setAttribute("aria-hidden","true");document.body.style.overflow="";pruebaActual=null;puntosActuales=[]}
+function cerrar(){const v=document.getElementById("visor");v.classList.remove("activo");v.setAttribute("aria-hidden","true");document.body.style.overflow="";pruebaActual=null;puntosActuales=[];indicePruebaActual=-1;}
 
 function navegarPrueba(direccion){
   if(!pruebaActual || indicePruebaActual < 0 || ordenPruebas.length === 0)return;
@@ -443,7 +446,7 @@ document.addEventListener("keydown", event => {
 });
 window.addEventListener("resize",()=>{if(puntosActuales.length)dibujar(puntosActuales)});
 
-(async()=>{try{await abrirDB();await lista()}catch{msg("No se pudo abrir el almacenamiento local.")}if("serviceWorker"in navigator){try{await navigator.serviceWorker.register("./sw.js", { updateViaCache: "none" })}catch{}}})();
+(async()=>{try{await abrirDB();await lista()}catch{msg("No se pudo abrir el almacenamiento local.")}if("serviceWorker"in navigator){try{await navigator.serviceWorker.register("./sw.js?v=7", { updateViaCache: "none" })}catch{}}})();
 </script>
 </body>
 </html>
