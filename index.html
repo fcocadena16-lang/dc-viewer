@@ -13,28 +13,47 @@
 <style>
 :root{color-scheme:dark}*{box-sizing:border-box}
 body{margin:0;padding:max(18px,env(safe-area-inset-top)) 14px max(24px,env(safe-area-inset-bottom));background:#101010;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
-.contenedor{max-width:760px;margin:0 auto}
+.contenedor{max-width:820px;margin:0 auto}
 .tituloPrincipal{text-align:center;font-size:22px;font-weight:800;letter-spacing:.5px;line-height:1.25;margin:12px 42px 22px}
 .panel,.panelVisor{background:#202020;border:1px solid #2b2b2b;border-radius:14px;padding:14px}
 .cabeceraLista{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
 .cabeceraLista strong{font-size:17px;letter-spacing:.5px}
 .accionesCabecera{display:flex;gap:8px}
 .botonIcono{width:46px;height:46px;border:0;border-radius:11px;background:#eee;color:#111;font-size:27px;line-height:1;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
-.botonIcono:active{transform:scale(.96)}.botonIcono.activo{background:#ff5252;color:#fff}
-.lista{display:flex;flex-direction:column;gap:8px}.filaPrueba{display:flex;align-items:stretch;gap:8px}
+.botonIcono:active{transform:scale(.96)}.botonIcono.activo{background:#00c853;color:#07130a}
+.lista{display:flex;flex-direction:column;gap:8px}
+.filaPrueba{display:flex;align-items:center;gap:9px}
+.selectorPrueba{display:none;width:24px;height:24px;accent-color:#00c853;flex:0 0 auto}
+.modoSeleccion .selectorPrueba{display:block}
 .archivo{flex:1;min-width:0;text-align:left;background:#2b2b2b;border:1px solid #444;color:#fff;border-radius:10px;padding:12px;cursor:pointer}
+.archivo.seleccionado{border-color:#00c853;box-shadow:0 0 0 1px #00c853 inset}
 .archivoNombre{font-size:16px;font-weight:750;word-break:break-word}.archivoMeta{color:#aaa;font-size:12px;margin-top:5px}
-.botonEliminarFila{display:none;width:48px;border:0;border-radius:10px;background:#ff5252;color:#fff;font-size:22px;cursor:pointer}
-.modoEliminar .botonEliminarFila{display:block}.vacio{text-align:center;color:#999;padding:22px 6px}input[type=file]{display:none}
-#visor{display:none;position:fixed;inset:0;z-index:1000;overflow-y:auto;background:#101010;padding:max(72px,calc(env(safe-area-inset-top) + 58px)) 14px max(26px,env(safe-area-inset-bottom))}
-#visor.activo{display:block}.visorContenido{max-width:760px;margin:0 auto}
+.accionesSeleccion{display:none;margin-top:14px;text-align:center}
+.accionesSeleccion.visible{display:block}
+.botonBorrarSeleccion{width:100%;border:0;border-radius:10px;background:#ff5252;color:#fff;font-size:17px;font-weight:750;padding:13px 15px;cursor:pointer}
+.botonBorrarSeleccion:disabled{opacity:.35}
+.vacio{text-align:center;color:#999;padding:22px 6px}input[type=file]{display:none}
+#visor{display:none;position:fixed;inset:0;z-index:1000;overflow-y:auto;background:#101010;padding:max(66px,calc(env(safe-area-inset-top) + 52px)) 8px max(22px,env(safe-area-inset-bottom))}
+#visor.activo{display:block}.visorContenido{max-width:1040px;margin:0 auto}
 .cerrarVisor{position:fixed;top:max(12px,env(safe-area-inset-top));right:14px;z-index:1100;width:46px;height:46px;border:0;border-radius:50%;background:#eee;color:#111;font-size:27px;font-weight:700;line-height:1;cursor:pointer}
 #nombrePrueba{text-align:center;font-size:18px;font-weight:750;word-break:break-word;margin:0 50px 16px}
-.panelVisor{margin-bottom:14px}canvas{display:block;width:100%;height:auto;background:white;border-radius:10px}
+.panelVisor{margin-bottom:14px}canvas{display:block;width:100%;height:auto;min-height:360px;background:white;border-radius:10px}
 .estabilidad{display:none;margin-top:12px;padding:10px 12px;border-radius:8px;background:#2b2b2b;text-align:center;font-size:18px;font-weight:bold}
 .resultado{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid #555;padding:9px 0;font-size:18px}.resultado:last-child{border-bottom:0}.valor{font-weight:700;white-space:nowrap}.separador{height:14px}
 .mensaje{display:none;position:fixed;left:50%;bottom:max(22px,env(safe-area-inset-bottom));transform:translateX(-50%);background:#333;color:white;border:1px solid #555;padding:10px 14px;border-radius:9px;z-index:2000;max-width:90%;text-align:center}
-@media(max-width:520px){body{padding-left:12px;padding-right:12px}.panel,.panelVisor{padding:12px}.resultado{font-size:17px}.tituloPrincipal{font-size:20px}}
+@media(max-width:520px){
+body{padding-left:12px;padding-right:12px}
+.panel{padding:12px}
+.panelVisor{padding:6px}
+.resultado{font-size:17px}
+.tituloPrincipal{font-size:20px}
+#visor{padding-left:4px;padding-right:4px}
+#nombrePrueba{margin-left:54px;margin-right:54px}
+}
+@media(orientation:landscape){
+.visorContenido{max-width:1180px}
+canvas{min-height:430px}
+}
 </style>
 </head>
 <body>
@@ -45,11 +64,14 @@ body{margin:0;padding:max(18px,env(safe-area-inset-top)) 14px max(24px,env(safe-
       <strong>PRUEBAS GUARDADAS</strong>
       <div class="accionesCabecera">
         <button id="btnAgregar" class="botonIcono" type="button" aria-label="Cargar pruebas" title="Cargar pruebas">＋</button>
-        <button id="btnEditar" class="botonIcono" type="button" aria-label="Administrar pruebas" title="Administrar pruebas">⚙</button>
+        <button id="btnEditar" class="botonIcono" type="button" aria-label="Seleccionar pruebas" title="Seleccionar pruebas">✓</button>
       </div>
     </div>
     <input id="selectorCarpeta" type="file" accept=".csv,text/csv,text/plain" webkitdirectory directory multiple>
     <div id="lista" class="lista"></div>
+    <div id="accionesSeleccion" class="accionesSeleccion">
+      <button id="btnBorrarSeleccion" class="botonBorrarSeleccion" type="button" disabled>BORRAR SELECCIONADAS</button>
+    </div>
   </section>
 </main>
 
@@ -58,20 +80,20 @@ body{margin:0;padding:max(18px,env(safe-area-inset-top)) 14px max(24px,env(safe-
   <div class="visorContenido">
     <div id="nombrePrueba"></div>
     <div class="panelVisor">
-      <canvas id="grafica" width="900" height="470"></canvas>
+      <canvas id="grafica" width="1200" height="650"></canvas>
       <div id="estabilidad" class="estabilidad"></div>
     </div>
     <div class="panelVisor">
+      <div class="resultado"><span>1 min</span><span id="r1" class="valor">--</span></div>
+      <div class="resultado"><span>10 min</span><span id="r10" class="valor">--</span></div>
+      <div class="resultado"><span>20 min</span><span id="r20" class="valor">--</span></div>
+      <div class="resultado"><span>30 min</span><span id="r30" class="valor">--</span></div>
+      <div class="separador"></div>
       <div class="resultado"><span>Mínimo</span><span id="rMin" class="valor">--</span></div>
       <div class="resultado"><span>Tiempo del mínimo</span><span id="rTMin" class="valor">--</span></div>
       <div class="resultado"><span>Meseta</span><span id="rMeseta" class="valor">--</span></div>
       <div class="resultado"><span>Tiempo de estabilización</span><span id="rTEstable" class="valor">--</span></div>
       <div class="resultado"><span>Recuperación</span><span id="rRecuperacion" class="valor">--</span></div>
-      <div class="separador"></div>
-      <div class="resultado"><span>1 min</span><span id="r1" class="valor">--</span></div>
-      <div class="resultado"><span>10 min</span><span id="r10" class="valor">--</span></div>
-      <div class="resultado"><span>20 min</span><span id="r20" class="valor">--</span></div>
-      <div class="resultado"><span>30 min</span><span id="r30" class="valor">--</span></div>
     </div>
   </div>
 </section>
@@ -80,9 +102,9 @@ body{margin:0;padding:max(18px,env(safe-area-inset-top)) 14px max(24px,env(safe-
 <script>
 "use strict";
 const DB_NAME="Visor130VDB", DB_VERSION=1, STORE="pruebas";
-let db=null, pruebaActual=null, puntosActuales=[], modoEliminar=false;
+let db=null, pruebaActual=null, puntosActuales=[], modoSeleccion=false, seleccionadas=new Set();
 
-function msg(t){const e=document.getElementById("mensaje");e.textContent=t;e.style.display="block";clearTimeout(msg.timer);msg.timer=setTimeout(()=>e.style.display="none",2400)}
+function msg(t,ms=1600){const e=document.getElementById("mensaje");e.textContent=t;e.style.display="block";clearTimeout(msg.timer);msg.timer=setTimeout(()=>{e.style.display="none";e.textContent=""},ms)}
 function abrirDB(){return new Promise((ok,no)=>{const r=indexedDB.open(DB_NAME,DB_VERSION);r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains(STORE)){const s=d.createObjectStore(STORE,{keyPath:"id",autoIncrement:true});s.createIndex("nombre","nombre",{unique:false});s.createIndex("importado","importado",{unique:false})}};r.onsuccess=()=>{db=r.result;ok(db)};r.onerror=()=>no(r.error)})}
 function st(m="readonly"){return db.transaction(STORE,m).objectStore(STORE)}
 function guardar(x){return new Promise((ok,no)=>{const r=st("readwrite").add(x);r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)})}
@@ -154,16 +176,91 @@ async function importar(files){
 }
 
 async function lista(){
-  const cont=document.getElementById("lista"),ps=await todos();ps.sort((a,b)=>b.importado-a.importado);cont.innerHTML="";
-  if(!ps.length){cont.innerHTML='<div class="vacio">No hay pruebas guardadas.</div>';return}
-  for(const p of ps){
-    const f=document.createElement("div");f.className="filaPrueba";
-    const b=document.createElement("button");b.className="archivo";b.type="button";b.innerHTML='<div class="archivoNombre"></div><div class="archivoMeta"></div>';
-    b.querySelector(".archivoNombre").textContent=p.nombre;b.querySelector(".archivoMeta").textContent=ft(p.duracion);b.onclick=()=>{if(!modoEliminar)abrir(p.id)};
-    const del=document.createElement("button");del.className="botonEliminarFila";del.type="button";del.textContent="🗑";del.setAttribute("aria-label","Eliminar prueba");
-    del.onclick=async ev=>{ev.stopPropagation();if(confirm("¿Eliminar "+p.nombre+" del visor?")){await borrar(p.id);await lista();msg("Prueba eliminada.")}};
-    f.append(b,del);cont.appendChild(f)
+  const cont=document.getElementById("lista"),ps=await todos();
+  ps.sort((a,b)=>b.importado-a.importado);
+  cont.innerHTML="";
+
+  // Remove ids that no longer exist
+  const idsExistentes=new Set(ps.map(p=>Number(p.id)));
+  for(const id of [...seleccionadas])if(!idsExistentes.has(Number(id)))seleccionadas.delete(Number(id));
+
+  if(!ps.length){
+    cont.innerHTML='<div class="vacio">No hay pruebas guardadas.</div>';
+    actualizarAccionesSeleccion();
+    return;
   }
+
+  for(const p of ps){
+    const f=document.createElement("div");
+    f.className="filaPrueba";
+
+    const cb=document.createElement("input");
+    cb.type="checkbox";
+    cb.className="selectorPrueba";
+    cb.checked=seleccionadas.has(Number(p.id));
+    cb.setAttribute("aria-label","Seleccionar "+p.nombre);
+
+    const b=document.createElement("button");
+    b.className="archivo"+(cb.checked?" seleccionado":"");
+    b.type="button";
+    b.innerHTML='<div class="archivoNombre"></div><div class="archivoMeta"></div>';
+    b.querySelector(".archivoNombre").textContent=p.nombre;
+    b.querySelector(".archivoMeta").textContent=ft(p.duracion);
+
+    const cambiar=()=>{
+      const id=Number(p.id);
+      if(seleccionadas.has(id))seleccionadas.delete(id);else seleccionadas.add(id);
+      cb.checked=seleccionadas.has(id);
+      b.classList.toggle("seleccionado",cb.checked);
+      actualizarAccionesSeleccion();
+    };
+
+    cb.onchange=()=>{
+      const id=Number(p.id);
+      if(cb.checked)seleccionadas.add(id);else seleccionadas.delete(id);
+      b.classList.toggle("seleccionado",cb.checked);
+      actualizarAccionesSeleccion();
+    };
+
+    b.onclick=()=>{
+      if(modoSeleccion)cambiar();
+      else abrir(p.id);
+    };
+
+    f.append(cb,b);
+    cont.appendChild(f);
+  }
+
+  cont.classList.toggle("modoSeleccion",modoSeleccion);
+  actualizarAccionesSeleccion();
+}
+
+function actualizarAccionesSeleccion(){
+  const acciones=document.getElementById("accionesSeleccion");
+  const btn=document.getElementById("btnBorrarSeleccion");
+  acciones.classList.toggle("visible",modoSeleccion);
+  btn.disabled=seleccionadas.size===0;
+  btn.textContent=seleccionadas.size>0
+    ? "BORRAR SELECCIONADAS ("+seleccionadas.size+")"
+    : "BORRAR SELECCIONADAS";
+}
+
+async function borrarSeleccionadas(){
+  if(seleccionadas.size===0)return;
+  const n=seleccionadas.size;
+  if(!confirm("¿Eliminar "+n+" "+(n===1?"prueba seleccionada":"pruebas seleccionadas")+" del visor?"))return;
+
+  for(const id of [...seleccionadas]){
+    await borrar(id);
+  }
+
+  seleccionadas.clear();
+  await lista();
+
+  // No dejar aviso persistente en la parte inferior.
+  const e=document.getElementById("mensaje");
+  e.style.display="none";
+  e.textContent="";
 }
 
 async function abrir(id){
@@ -178,11 +275,18 @@ async function abrir(id){
   const est=document.getElementById("estabilidad");if(a.estabilizada){est.style.display="block";est.textContent="ESTABILIZADO — "+Number(a.meseta).toFixed(2)+" V"}else{est.style.display="none";est.textContent=""}
 }
 function cerrar(){const v=document.getElementById("visor");v.classList.remove("activo");v.setAttribute("aria-hidden","true");document.body.style.overflow="";pruebaActual=null;puntosActuales=[]}
-function edit(){modoEliminar=!modoEliminar;document.getElementById("lista").classList.toggle("modoEliminar",modoEliminar);document.getElementById("btnEditar").classList.toggle("activo",modoEliminar)}
+function edit(){
+  modoSeleccion=!modoSeleccion;
+  if(!modoSeleccion)seleccionadas.clear();
+  document.getElementById("lista").classList.toggle("modoSeleccion",modoSeleccion);
+  document.getElementById("btnEditar").classList.toggle("activo",modoSeleccion);
+  lista();
+}
 
 document.getElementById("btnAgregar").onclick=()=>document.getElementById("selectorCarpeta").click();
 document.getElementById("selectorCarpeta").onchange=async e=>{const f=[...e.target.files];e.target.value="";if(f.length)await importar(f)};
 document.getElementById("btnEditar").onclick=edit;
+document.getElementById("btnBorrarSeleccion").onclick=borrarSeleccionadas;
 document.getElementById("btnCerrarVisor").onclick=cerrar;
 window.addEventListener("resize",()=>{if(puntosActuales.length)dibujar(puntosActuales)});
 
