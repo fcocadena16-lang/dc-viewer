@@ -46,7 +46,7 @@ body{margin:0;padding:max(18px,env(safe-area-inset-top)) 14px max(24px,env(safe-
 .botonBorrarSeleccion:disabled{opacity:.35}
 .vacio{text-align:center;color:#999;padding:22px 6px}input[type=file]{display:none}
 #visor{display:none;position:fixed;inset:0;z-index:1000;overflow-y:auto;background:#101010;padding:max(66px,calc(env(safe-area-inset-top) + 52px)) 8px max(22px,env(safe-area-inset-bottom))}
-#visor.activo{display:block}.visorContenido{transition:opacity .12s ease;max-width:1040px;margin:0 auto}
+#visor.activo{display:block}.visorContenido{transition:transform .22s ease, opacity .18s ease;will-change:transform,opacity;max-width:1040px;margin:0 auto}
 .cerrarVisor{position:fixed;top:max(12px,env(safe-area-inset-top));right:14px;z-index:1100;width:46px;height:46px;border:0;border-radius:50%;background:#eee;color:#111;font-size:27px;font-weight:700;line-height:1;cursor:pointer}
 #nombrePrueba{text-align:center;font-size:18px;font-weight:750;word-break:break-word;margin:0 50px 16px}
 .panelVisor{margin-bottom:14px}canvas{display:block;width:100%;height:auto;min-height:360px;background:white;border-radius:10px}
@@ -63,7 +63,7 @@ body{padding-left:12px;padding-right:12px}
 #nombrePrueba{margin-left:54px;margin-right:54px}
 }
 @media(orientation:landscape){
-.visorContenido{transition:opacity .12s ease;max-width:1180px}
+.visorContenido{transition:transform .22s ease, opacity .18s ease;will-change:transform,opacity;max-width:1180px}
 canvas{min-height:430px}
 }
 </style>
@@ -357,6 +357,11 @@ async function abrir(id){
   pruebaActual=p;
   puntosActuales=d;
   indicePruebaActual=ordenPruebas.indexOf(Number(p.id));
+  const contenidoActual = document.querySelector("#visor .visorContenido");
+  if(contenidoActual && !gestoHorizontal){
+    contenidoActual.style.transform = "translateX(0)";
+    contenidoActual.style.opacity = "1";
+  }
   document.getElementById("nombrePrueba").textContent=p.nombre;
   const v=document.getElementById("visor");v.classList.add("activo");v.setAttribute("aria-hidden","false");document.body.style.overflow="hidden";v.scrollTop=0;dibujar(d);
   const a=analizar(d);document.getElementById("rMin").textContent=fv(a.minimo);document.getElementById("rTMin").textContent=ft(a.tiempoMinimo);
@@ -381,6 +386,12 @@ function navegarPrueba(direccion){
 let toqueInicioX = null;
 let toqueInicioY = null;
 let toqueInicioTiempo = 0;
+let gestoHorizontal = false;
+let desplazamientoActual = 0;
+
+function contenidoVisor(){
+  return document.querySelector("#visor .visorContenido");
+}
 
 function iniciarGestoVisor(event){
   if(!event.touches || event.touches.length !== 1)return;
@@ -389,35 +400,148 @@ function iniciarGestoVisor(event){
   toqueInicioX = t.clientX;
   toqueInicioY = t.clientY;
   toqueInicioTiempo = Date.now();
+  gestoHorizontal = false;
+  desplazamientoActual = 0;
+
+  const c = contenidoVisor();
+  if(c){
+    c.style.transition = "none";
+  }
+}
+
+function moverGestoVisor(event){
+  if(toqueInicioX === null || toqueInicioY === null)return;
+  if(!event.touches || event.touches.length !== 1)return;
+
+  const t = event.touches[0];
+  const dx = t.clientX - toqueInicioX;
+  const dy = t.clientY - toqueInicioY;
+
+  // Decide la intención del gesto solo después de un pequeño movimiento.
+  if(!gestoHorizontal){
+    if(Math.abs(dx) < 10 && Math.abs(dy) < 10)return;
+
+    // Si el movimiento es principalmente vertical, dejamos que haga scroll.
+    if(Math.abs(dy) >= Math.abs(dx)){
+      toqueInicioX = null;
+      toqueInicioY = null;
+      return;
+    }
+
+    gestoHorizontal = true;
+  }
+
+  if(!gestoHorizontal)return;
+
+  // Solo cuando ya sabemos que es horizontal impedimos el scroll de Safari.
+  if(event.cancelable)event.preventDefault();
+
+  let desplazamiento = dx;
+
+  // Resistencia si intenta pasar más allá de la primera o última prueba.
+  const intentandoAnterior = dx > 0;
+  const intentandoSiguiente = dx < 0;
+  const sinAnterior = indicePruebaActual <= 0;
+  const sinSiguiente = indicePruebaActual >= ordenPruebas.length - 1;
+
+  if(
+    (intentandoAnterior && sinAnterior) ||
+    (intentandoSiguiente && sinSiguiente)
+  ){
+    desplazamiento = dx * 0.28;
+  }
+
+  desplazamientoActual = desplazamiento;
+
+  const c = contenidoVisor();
+  if(c){
+    c.style.transform = "translateX(" + desplazamiento + "px)";
+    c.style.opacity = String(Math.max(0.72, 1 - Math.abs(desplazamiento) / 900));
+  }
+}
+
+async function animarCambioPrueba(direccion){
+  const c = contenidoVisor();
+  if(!c)return;
+
+  const ancho = Math.max(window.innerWidth, 320);
+  const salida = direccion > 0 ? -ancho : ancho;
+  const entrada = direccion > 0 ? ancho : -ancho;
+  const nuevoIndice = indicePruebaActual + direccion;
+
+  if(nuevoIndice < 0 || nuevoIndice >= ordenPruebas.length){
+    c.style.transition = "transform .20s ease, opacity .16s ease";
+    c.style.transform = "translateX(0)";
+    c.style.opacity = "1";
+    return;
+  }
+
+  // Sale la prueba actual.
+  c.style.transition = "transform .18s ease, opacity .16s ease";
+  c.style.transform = "translateX(" + salida + "px)";
+  c.style.opacity = "0.45";
+
+  await new Promise(resolve => setTimeout(resolve, 180));
+
+  // Carga la nueva prueba sin cerrar el visor.
+  await abrir(ordenPruebas[nuevoIndice]);
+
+  // La colocamos fuera del lado contrario.
+  const nuevoContenido = contenidoVisor();
+  nuevoContenido.style.transition = "none";
+  nuevoContenido.style.transform = "translateX(" + entrada + "px)";
+  nuevoContenido.style.opacity = "0.45";
+
+  // Forzar reflow.
+  void nuevoContenido.offsetWidth;
+
+  // Entra a su posición.
+  requestAnimationFrame(() => {
+    nuevoContenido.style.transition = "transform .22s ease, opacity .18s ease";
+    nuevoContenido.style.transform = "translateX(0)";
+    nuevoContenido.style.opacity = "1";
+  });
 }
 
 function terminarGestoVisor(event){
-  if(toqueInicioX === null || toqueInicioY === null)return;
-  if(!event.changedTouches || event.changedTouches.length !== 1)return;
+  if(toqueInicioX === null || toqueInicioY === null){
+    return;
+  }
 
-  const t = event.changedTouches[0];
-  const dx = t.clientX - toqueInicioX;
-  const dy = t.clientY - toqueInicioY;
-  const dt = Date.now() - toqueInicioTiempo;
+  let dx = desplazamientoActual;
+  let dt = Date.now() - toqueInicioTiempo;
 
   toqueInicioX = null;
   toqueInicioY = null;
   toqueInicioTiempo = 0;
 
-  // Gesto tipo Fotos:
-  // - al menos 70 px horizontales
-  // - claramente más horizontal que vertical
-  // - no debe ser un arrastre excesivamente lento
-  if(Math.abs(dx) < 70)return;
-  if(Math.abs(dx) <= Math.abs(dy) * 1.35)return;
-  if(dt > 1200)return;
+  const eraHorizontal = gestoHorizontal;
+  gestoHorizontal = false;
+  desplazamientoActual = 0;
 
-  if(dx < 0){
-    // Deslizar a la izquierda -> siguiente prueba
-    navegarPrueba(1);
+  const c = contenidoVisor();
+  if(!c)return;
+
+  if(!eraHorizontal){
+    c.style.transition = "";
+    c.style.transform = "translateX(0)";
+    c.style.opacity = "1";
+    return;
+  }
+
+  const umbral = Math.min(95, window.innerWidth * 0.22);
+
+  if(Math.abs(dx) >= umbral && dt <= 1400){
+    if(dx < 0){
+      animarCambioPrueba(1);
+    }else{
+      animarCambioPrueba(-1);
+    }
   }else{
-    // Deslizar a la derecha -> prueba anterior
-    navegarPrueba(-1);
+    // No alcanzó el umbral: regresa suavemente.
+    c.style.transition = "transform .20s ease, opacity .16s ease";
+    c.style.transform = "translateX(0)";
+    c.style.opacity = "1";
   }
 }
 
@@ -437,7 +561,9 @@ document.getElementById("btnCerrarVisor").onclick=cerrar;
 
 const visorGestos = document.getElementById("visor");
 visorGestos.addEventListener("touchstart", iniciarGestoVisor, {passive:true});
+visorGestos.addEventListener("touchmove", moverGestoVisor, {passive:false});
 visorGestos.addEventListener("touchend", terminarGestoVisor, {passive:true});
+visorGestos.addEventListener("touchcancel", terminarGestoVisor, {passive:true});
 
 document.addEventListener("keydown", event => {
   if(!document.getElementById("visor").classList.contains("activo"))return;
@@ -446,7 +572,7 @@ document.addEventListener("keydown", event => {
 });
 window.addEventListener("resize",()=>{if(puntosActuales.length)dibujar(puntosActuales)});
 
-(async()=>{try{await abrirDB();await lista()}catch{msg("No se pudo abrir el almacenamiento local.")}if("serviceWorker"in navigator){try{await navigator.serviceWorker.register("./sw.js?v=7", { updateViaCache: "none" })}catch{}}})();
+(async()=>{try{await abrirDB();await lista()}catch{msg("No se pudo abrir el almacenamiento local.")}if("serviceWorker"in navigator){try{await navigator.serviceWorker.register("./sw.js?v=8", { updateViaCache: "none" })}catch{}}})();
 </script>
 </body>
 </html>
