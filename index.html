@@ -124,7 +124,7 @@ canvas{min-height:430px}
 <script>
 "use strict";
 const DB_NAME="Visor130VDB", DB_VERSION=1, STORE="pruebas";
-let db=null, pruebaActual=null, puntosActuales=[], modoSeleccion=false, seleccionadas=new Set();
+let db=null, pruebaActual=null, puntosActuales=[], modoSeleccion=false, seleccionadas=new Set(), ordenPruebas=[], indicePruebaActual=-1;
 
 function msg(t,ms=1600){const e=document.getElementById("mensaje");e.textContent=t;e.style.display="block";clearTimeout(msg.timer);msg.timer=setTimeout(()=>{e.style.display="none";e.textContent=""},ms)}
 function abrirDB(){return new Promise((ok,no)=>{const r=indexedDB.open(DB_NAME,DB_VERSION);r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains(STORE)){const s=d.createObjectStore(STORE,{keyPath:"id",autoIncrement:true});s.createIndex("nombre","nombre",{unique:false});s.createIndex("importado","importado",{unique:false})}};r.onsuccess=()=>{db=r.result;ok(db)};r.onerror=()=>no(r.error)})}
@@ -200,6 +200,7 @@ async function importar(files){
 async function lista(){
   const cont=document.getElementById("lista"),ps=await todos();
   ps.sort((a,b)=>b.importado-a.importado);
+  ordenPruebas = ps.map(p => Number(p.id));
   cont.innerHTML="";
 
   // Remove ids that no longer exist
@@ -363,6 +364,60 @@ async function abrir(id){
   const est=document.getElementById("estabilidad");if(a.estabilizada){est.style.display="block";est.textContent="ESTABILIZADO — "+Number(a.meseta).toFixed(2)+" V"}else{est.style.display="none";est.textContent=""}
 }
 function cerrar(){const v=document.getElementById("visor");v.classList.remove("activo");v.setAttribute("aria-hidden","true");document.body.style.overflow="";pruebaActual=null;puntosActuales=[]}
+
+function navegarPrueba(direccion){
+  if(!pruebaActual || indicePruebaActual < 0 || ordenPruebas.length === 0)return;
+
+  const nuevoIndice = indicePruebaActual + direccion;
+
+  if(nuevoIndice < 0 || nuevoIndice >= ordenPruebas.length)return;
+
+  abrir(ordenPruebas[nuevoIndice]);
+}
+
+let toqueInicioX = null;
+let toqueInicioY = null;
+let toqueInicioTiempo = 0;
+
+function iniciarGestoVisor(event){
+  if(!event.touches || event.touches.length !== 1)return;
+
+  const t = event.touches[0];
+  toqueInicioX = t.clientX;
+  toqueInicioY = t.clientY;
+  toqueInicioTiempo = Date.now();
+}
+
+function terminarGestoVisor(event){
+  if(toqueInicioX === null || toqueInicioY === null)return;
+  if(!event.changedTouches || event.changedTouches.length !== 1)return;
+
+  const t = event.changedTouches[0];
+  const dx = t.clientX - toqueInicioX;
+  const dy = t.clientY - toqueInicioY;
+  const dt = Date.now() - toqueInicioTiempo;
+
+  toqueInicioX = null;
+  toqueInicioY = null;
+  toqueInicioTiempo = 0;
+
+  // Gesto tipo Fotos:
+  // - al menos 70 px horizontales
+  // - claramente más horizontal que vertical
+  // - no debe ser un arrastre excesivamente lento
+  if(Math.abs(dx) < 70)return;
+  if(Math.abs(dx) <= Math.abs(dy) * 1.35)return;
+  if(dt > 1200)return;
+
+  if(dx < 0){
+    // Deslizar a la izquierda -> siguiente prueba
+    navegarPrueba(1);
+  }else{
+    // Deslizar a la derecha -> prueba anterior
+    navegarPrueba(-1);
+  }
+}
+
 function edit(){
   modoSeleccion=!modoSeleccion;
   if(!modoSeleccion)seleccionadas.clear();
@@ -376,6 +431,16 @@ document.getElementById("selectorCarpeta").onchange=async e=>{const f=[...e.targ
 document.getElementById("btnEditar").onclick=edit;
 document.getElementById("btnBorrarSeleccion").onclick=borrarSeleccionadas;
 document.getElementById("btnCerrarVisor").onclick=cerrar;
+
+const visorGestos = document.getElementById("visor");
+visorGestos.addEventListener("touchstart", iniciarGestoVisor, {passive:true});
+visorGestos.addEventListener("touchend", terminarGestoVisor, {passive:true});
+
+document.addEventListener("keydown", event => {
+  if(!document.getElementById("visor").classList.contains("activo"))return;
+  if(event.key === "ArrowLeft") navegarPrueba(-1);
+  if(event.key === "ArrowRight") navegarPrueba(1);
+});
 window.addEventListener("resize",()=>{if(puntosActuales.length)dibujar(puntosActuales)});
 
 (async()=>{try{await abrirDB();await lista()}catch{msg("No se pudo abrir el almacenamiento local.")}if("serviceWorker"in navigator){try{await navigator.serviceWorker.register("./sw.js", { updateViaCache: "none" })}catch{}}})();
