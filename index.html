@@ -30,7 +30,19 @@ body{margin:0;padding:max(18px,env(safe-area-inset-top)) 14px max(24px,env(safe-
 .archivoNombre{font-size:16px;font-weight:750;word-break:break-word}.archivoMeta{color:#aaa;font-size:12px;margin-top:5px}
 .accionesSeleccion{display:none;margin-top:14px;text-align:center}
 .accionesSeleccion.visible{display:block}
-.botonBorrarSeleccion{width:100%;border:0;border-radius:10px;background:#ff5252;color:#fff;font-size:17px;font-weight:750;padding:13px 15px;cursor:pointer}
+.botonBorrarSeleccion{
+      width:58px;
+      height:54px;
+      border:0;
+      border-radius:10px;
+      background:#ff5252;
+      color:#fff;
+      padding:0;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+    }
 .botonBorrarSeleccion:disabled{opacity:.35}
 .vacio{text-align:center;color:#999;padding:22px 6px}input[type=file]{display:none}
 #visor{display:none;position:fixed;inset:0;z-index:1000;overflow-y:auto;background:#101010;padding:max(66px,calc(env(safe-area-inset-top) + 52px)) 8px max(22px,env(safe-area-inset-bottom))}
@@ -70,7 +82,17 @@ canvas{min-height:430px}
     <input id="selectorCarpeta" type="file" accept=".csv,text/csv,text/plain" webkitdirectory directory multiple>
     <div id="lista" class="lista"></div>
     <div id="accionesSeleccion" class="accionesSeleccion">
-      <button id="btnBorrarSeleccion" class="botonBorrarSeleccion" type="button" disabled>BORRAR SELECCIONADAS</button>
+      <button id="btnBorrarSeleccion"
+      class="botonBorrarSeleccion"
+      type="button"
+      disabled
+      aria-label="Eliminar pruebas seleccionadas"
+      title="Eliminar pruebas seleccionadas">
+      <svg viewBox="0 0 24 24" width="27" height="27" aria-hidden="true">
+        <path fill="currentColor"
+          d="M9 3h6l1 2h4v2H4V5h4l1-2Zm-2 6h10l-.8 11H7.8L7 9Zm3 2v7h2v-7h-2Zm4 0v7h2v-7h-2Z"/>
+      </svg>
+    </button>
     </div>
   </section>
 </main>
@@ -236,31 +258,97 @@ async function lista(){
 }
 
 function actualizarAccionesSeleccion(){
-  const acciones=document.getElementById("accionesSeleccion");
-  const btn=document.getElementById("btnBorrarSeleccion");
-  acciones.classList.toggle("visible",modoSeleccion);
-  btn.disabled=seleccionadas.size===0;
-  btn.textContent=seleccionadas.size>0
-    ? "BORRAR SELECCIONADAS ("+seleccionadas.size+")"
-    : "BORRAR SELECCIONADAS";
+  const acciones =
+    document.getElementById("accionesSeleccion");
+
+  const btn =
+    document.getElementById("btnBorrarSeleccion");
+
+  const haySeleccion =
+    modoSeleccion &&
+    seleccionadas.size > 0;
+
+  acciones.classList.toggle(
+    "visible",
+    haySeleccion
+  );
+
+  btn.disabled =
+    !haySeleccion;
 }
 
 async function borrarSeleccionadas(){
-  if(seleccionadas.size===0)return;
-  const n=seleccionadas.size;
-  if(!confirm("¿Eliminar "+n+" "+(n===1?"prueba seleccionada":"pruebas seleccionadas")+" del visor?"))return;
-
-  for(const id of [...seleccionadas]){
-    await borrar(id);
+  if (
+    seleccionadas.size === 0
+  ) {
+    return;
   }
 
+  const n =
+    seleccionadas.size;
+
+  if (
+    !confirm(
+      "¿Eliminar " +
+      n +
+      " " +
+      (
+        n === 1
+        ?
+        "prueba seleccionada"
+        :
+        "pruebas seleccionadas"
+      ) +
+      " del visor?"
+    )
+  ) {
+    return;
+  }
+
+  for (
+    const id of
+    [...seleccionadas]
+  ) {
+    await borrar(
+      id
+    );
+  }
+
+  // Limpiar completamente el modo de selección.
   seleccionadas.clear();
+  modoSeleccion = false;
+
+  document.getElementById(
+    "btnEditar"
+  ).classList.remove(
+    "activo"
+  );
+
+  document.getElementById(
+    "lista"
+  ).classList.remove(
+    "modoSeleccion"
+  );
+
+  document.getElementById(
+    "accionesSeleccion"
+  ).classList.remove(
+    "visible"
+  );
+
   await lista();
 
-  // No dejar aviso persistente en la parte inferior.
-  const e=document.getElementById("mensaje");
-  e.style.display="none";
-  e.textContent="";
+  // No dejar mensaje abajo después de borrar.
+  const aviso =
+    document.getElementById(
+      "mensaje"
+    );
+
+  aviso.style.display =
+    "none";
+
+  aviso.textContent =
+    "";
 }
 
 async function abrir(id){
@@ -290,7 +378,7 @@ document.getElementById("btnBorrarSeleccion").onclick=borrarSeleccionadas;
 document.getElementById("btnCerrarVisor").onclick=cerrar;
 window.addEventListener("resize",()=>{if(puntosActuales.length)dibujar(puntosActuales)});
 
-(async()=>{try{await abrirDB();await lista()}catch{msg("No se pudo abrir el almacenamiento local.")}if("serviceWorker"in navigator){try{await navigator.serviceWorker.register("./sw.js")}catch{}}})();
+(async()=>{try{await abrirDB();await lista()}catch{msg("No se pudo abrir el almacenamiento local.")}if("serviceWorker"in navigator){try{await navigator.serviceWorker.register("./sw.js", { updateViaCache: "none" })}catch{}}})();
 </script>
 </body>
 </html>
