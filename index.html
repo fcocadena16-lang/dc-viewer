@@ -46,7 +46,17 @@ body{margin:0;padding:max(18px,env(safe-area-inset-top)) 14px max(24px,env(safe-
 .botonBorrarSeleccion:disabled{opacity:.35}
 .vacio{text-align:center;color:#999;padding:22px 6px}input[type=file]{display:none}
 #visor{display:none;position:fixed;inset:0;z-index:1000;overflow-y:auto;background:#101010;padding:max(66px,calc(env(safe-area-inset-top) + 52px)) 8px max(22px,env(safe-area-inset-bottom))}
-#visor.activo{display:block}.visorContenido{transition:transform .22s ease, opacity .18s ease;will-change:transform,opacity;max-width:1040px;margin:0 auto}
+#visor.activo{display:block}.visorContenido{position:relative;z-index:1;transition:transform .22s ease;will-change:transform;max-width:1040px;margin:0 auto}
+
+.visorPreview{
+  position:absolute;
+  z-index:2;
+  pointer-events:none;
+  will-change:transform;
+  margin:0;
+}
+.visorPreview canvas{pointer-events:none}
+
 .cerrarVisor{position:fixed;top:max(12px,env(safe-area-inset-top));right:14px;z-index:1100;width:46px;height:46px;border:0;border-radius:50%;background:#eee;color:#111;font-size:27px;font-weight:700;line-height:1;cursor:pointer}
 #nombrePrueba{text-align:center;font-size:18px;font-weight:750;word-break:break-word;margin:0 50px 16px}
 .panelVisor{margin-bottom:14px}canvas{display:block;width:100%;height:auto;min-height:360px;background:white;border-radius:10px}
@@ -63,7 +73,7 @@ body{padding-left:12px;padding-right:12px}
 #nombrePrueba{margin-left:54px;margin-right:54px}
 }
 @media(orientation:landscape){
-.visorContenido{transition:transform .22s ease, opacity .18s ease;will-change:transform,opacity;max-width:1180px}
+.visorContenido{max-width:1180px}
 canvas{min-height:430px}
 }
 </style>
@@ -164,8 +174,8 @@ function analizar(d){
 }
 const fv=v=>v===null||!Number.isFinite(Number(v))?"--":Number(v).toFixed(2)+" V";
 function ft(s){if(s===null||!Number.isFinite(Number(s)))return"--";const n=Math.max(0,Math.round(Number(s)));return Math.floor(n/60)+":"+String(n%60).padStart(2,"0")+" min"}
-function dibujar(d){
-  const c=document.getElementById("grafica"),x=c.getContext("2d"),W=c.width,H=c.height,L=66,R=18,T=20,B=50,aw=W-L-R,ah=H-T-B;
+function dibujarEnCanvas(c,d){
+  const x=c.getContext("2d"),W=c.width,H=c.height,L=66,R=18,T=20,B=50,aw=W-L-R,ah=H-T-B;
   const TMAX=Math.max(1800,d.length?Math.ceil(d[d.length-1][0]/300)*300:1800);let vmin=117,vmax=132;
   if(d.length){let mi=d[0][1],ma=d[0][1];for(let i=1;i<d.length;i++){mi=Math.min(mi,d[i][1]);ma=Math.max(ma,d[i][1])}if(mi<117)vmin=Math.floor(mi/5)*5;if(ma>132)vmax=Math.ceil(ma/5)*5}
   if(vmax-vmin<10)vmin=vmax-10;x.clearRect(0,0,W,H);x.fillStyle="white";x.fillRect(0,0,W,H);x.font="14px Arial";
@@ -177,6 +187,8 @@ function dibujar(d){
   if(!d.length)return;const X=s=>L+(s/TMAX)*aw,Y=v=>T+((vmax-v)/(vmax-vmin))*ah;x.lineWidth=1.5;
   for(let i=1;i<d.length;i++){const [t1,v1]=d[i-1],[t2,v2]=d[i];x.strokeStyle=((v1+v2)/2<=110)?"red":"blue";x.beginPath();x.moveTo(X(t1),Y(v1));x.lineTo(X(t2),Y(v2));x.stroke()}
 }
+function dibujar(d){dibujarEnCanvas(document.getElementById("grafica"),d)}
+
 
 async function importar(files){
   const csv=[...files].filter(f=>f.name.toLowerCase().endsWith(".csv"));
@@ -370,8 +382,9 @@ async function abrir(id){
   document.getElementById("r1").textContent=fv(valorSegundo(d,60));document.getElementById("r10").textContent=fv(valorSegundo(d,600));
   document.getElementById("r20").textContent=fv(valorSegundo(d,1200));document.getElementById("r30").textContent=fv(valorSegundo(d,1800));
   const est=document.getElementById("estabilidad");if(a.estabilizada){est.style.display="block";est.textContent="ESTABILIZADO — "+Number(a.meseta).toFixed(2)+" V"}else{est.style.display="none";est.textContent=""}
+  precargarAdyacentes();
 }
-function cerrar(){const v=document.getElementById("visor");v.classList.remove("activo");v.setAttribute("aria-hidden","true");document.body.style.overflow="";pruebaActual=null;puntosActuales=[];indicePruebaActual=-1;}
+function cerrar(){quitarPreview();const v=document.getElementById("visor");v.classList.remove("activo");v.setAttribute("aria-hidden","true");document.body.style.overflow="";pruebaActual=null;puntosActuales=[];indicePruebaActual=-1;}
 
 function navegarPrueba(direccion){
   if(!pruebaActual || indicePruebaActual < 0 || ordenPruebas.length === 0)return;
@@ -388,9 +401,239 @@ let toqueInicioY = null;
 let toqueInicioTiempo = 0;
 let gestoHorizontal = false;
 let desplazamientoActual = 0;
+let previewEl = null;
+let previewDireccion = 0;
+let previewToken = 0;
+const cacheAdyacentes = new Map();
 
 function contenidoVisor(){
   return document.querySelector("#visor .visorContenido");
+}
+
+
+function quitarPreview(){
+  previewToken++;
+  if(previewEl){
+    previewEl.remove();
+    previewEl=null;
+  }
+  previewDireccion=0;
+}
+
+async function obtenerPruebaPorIndice(indice){
+  if(indice < 0 || indice >= ordenPruebas.length)return null;
+  const id=ordenPruebas[indice];
+  if(cacheAdyacentes.has(id))return cacheAdyacentes.get(id);
+  const p=await uno(id);
+  if(!p)return null;
+  const d=csvPuntos(p.contenido||"");
+  if(!d.length)return null;
+  const dato={p,d};
+  cacheAdyacentes.set(id,dato);
+  return dato;
+}
+
+async function precargarAdyacentes(){
+  if(indicePruebaActual < 0)return;
+  const indices=[indicePruebaActual-1,indicePruebaActual+1];
+  for(const idx of indices){
+    if(idx<0 || idx>=ordenPruebas.length)continue;
+    obtenerPruebaPorIndice(idx).catch(()=>{});
+  }
+}
+
+function llenarPreview(el,p,d){
+  const a=analizar(d);
+  el.querySelector(".previewNombre").textContent=p.nombre;
+
+  const valores=[
+    ["r1",fv(valorSegundo(d,60))],
+    ["r10",fv(valorSegundo(d,600))],
+    ["r20",fv(valorSegundo(d,1200))],
+    ["r30",fv(valorSegundo(d,1800))],
+    ["rMin",fv(a.minimo)],
+    ["rTMin",ft(a.tiempoMinimo)],
+    ["rMeseta",fv(a.meseta)],
+    ["rTEstable",ft(a.tiempoEstabilizacion)],
+    ["rRecuperacion",a.recuperacion===null?"--":(a.recuperacion>=0?"+":"")+Number(a.recuperacion).toFixed(2)+" V"]
+  ];
+
+  for(const [k,v] of valores){
+    const n=el.querySelector('[data-r="'+k+'"]');
+    if(n)n.textContent=v;
+  }
+
+  const est=el.querySelector(".previewEstabilidad");
+  if(a.estabilizada){
+    est.style.display="block";
+    est.textContent="ESTABILIZADO — "+Number(a.meseta).toFixed(2)+" V";
+  }else{
+    est.style.display="none";
+    est.textContent="";
+  }
+
+  dibujarEnCanvas(el.querySelector("canvas"),d);
+}
+
+function crearElementoPreview(p,d){
+  const actual=contenidoVisor();
+  const visor=document.getElementById("visor");
+  const el=document.createElement("div");
+  el.className="visorPreview";
+
+  el.innerHTML=`
+    <div class="previewNombre" style="text-align:center;font-size:18px;font-weight:750;word-break:break-word;margin:0 50px 16px"></div>
+    <div class="panelVisor">
+      <canvas width="1200" height="650"></canvas>
+      <div class="estabilidad previewEstabilidad"></div>
+    </div>
+    <div class="panelVisor">
+      <div class="resultado"><span>1 min</span><span data-r="r1" class="valor">--</span></div>
+      <div class="resultado"><span>10 min</span><span data-r="r10" class="valor">--</span></div>
+      <div class="resultado"><span>20 min</span><span data-r="r20" class="valor">--</span></div>
+      <div class="resultado"><span>30 min</span><span data-r="r30" class="valor">--</span></div>
+      <div class="separador"></div>
+      <div class="resultado"><span>Mínimo</span><span data-r="rMin" class="valor">--</span></div>
+      <div class="resultado"><span>Tiempo del mínimo</span><span data-r="rTMin" class="valor">--</span></div>
+      <div class="resultado"><span>Meseta</span><span data-r="rMeseta" class="valor">--</span></div>
+      <div class="resultado"><span>Tiempo de estabilización</span><span data-r="rTEstable" class="valor">--</span></div>
+      <div class="resultado"><span>Recuperación</span><span data-r="rRecuperacion" class="valor">--</span></div>
+    </div>`;
+
+  el.style.top=actual.offsetTop+"px";
+  el.style.left=actual.offsetLeft+"px";
+  el.style.width=actual.offsetWidth+"px";
+
+  visor.appendChild(el);
+  llenarPreview(el,p,d);
+  return el;
+}
+
+function anchoCarrusel(){
+  return Math.max(document.getElementById("visor").clientWidth,window.innerWidth,320);
+}
+
+function posicionarPaginas(dx){
+  const actual=contenidoVisor();
+  if(actual){
+    actual.style.transform="translateX("+dx+"px)";
+    actual.style.opacity="1";
+  }
+
+  if(previewEl){
+    const w=anchoCarrusel();
+    const base=previewDireccion>0?w:-w;
+    previewEl.style.transform="translateX("+(base+dx)+"px)";
+    previewEl.style.opacity="1";
+  }
+}
+
+async function asegurarPreview(direccion){
+  if(direccion!==1 && direccion!==-1)return null;
+
+  const nuevoIndice=indicePruebaActual+direccion;
+  if(nuevoIndice<0 || nuevoIndice>=ordenPruebas.length){
+    quitarPreview();
+    return null;
+  }
+
+  if(previewEl && previewDireccion===direccion){
+    return previewEl;
+  }
+
+  const token=++previewToken;
+
+  if(previewEl){
+    previewEl.remove();
+    previewEl=null;
+  }
+
+  previewDireccion=direccion;
+
+  const dato=await obtenerPruebaPorIndice(nuevoIndice);
+  if(token!==previewToken || !dato)return null;
+
+  previewEl=crearElementoPreview(dato.p,dato.d);
+
+  const w=anchoCarrusel();
+  previewEl.style.transition="none";
+  previewEl.style.transform="translateX("+(direccion>0?w:-w)+"px)";
+
+  posicionarPaginas(desplazamientoActual);
+  return previewEl;
+}
+
+async function finalizarCambioCarrusel(direccion){
+  const actual=contenidoVisor();
+  const p=await asegurarPreview(direccion);
+
+  if(!actual || !p){
+    if(actual){
+      actual.style.transition="transform .20s ease";
+      actual.style.transform="translateX(0)";
+    }
+    quitarPreview();
+    return;
+  }
+
+  const w=anchoCarrusel();
+  const salida=direccion>0?-w:w;
+
+  actual.style.transition="transform .22s ease";
+  p.style.transition="transform .22s ease";
+
+  requestAnimationFrame(()=>{
+    actual.style.transform="translateX("+salida+"px)";
+    p.style.transform="translateX(0)";
+  });
+
+  await new Promise(resolve=>setTimeout(resolve,230));
+
+  const nuevoIndice=indicePruebaActual+direccion;
+  const nuevoId=ordenPruebas[nuevoIndice];
+
+  // La vista previa permanece encima mientras se carga el contenido real.
+  await abrir(nuevoId);
+
+  const nuevoActual=contenidoVisor();
+  nuevoActual.style.transition="none";
+  nuevoActual.style.transform="translateX(0)";
+  nuevoActual.style.opacity="1";
+
+  if(previewEl){
+    previewEl.remove();
+    previewEl=null;
+  }
+  previewDireccion=0;
+
+  requestAnimationFrame(()=>{
+    nuevoActual.style.transition="transform .22s ease";
+  });
+
+  precargarAdyacentes();
+}
+
+function regresarCarrusel(){
+  const actual=contenidoVisor();
+  const p=previewEl;
+  const w=anchoCarrusel();
+
+  if(actual){
+    actual.style.transition="transform .20s ease";
+    actual.style.transform="translateX(0)";
+  }
+
+  if(p){
+    p.style.transition="transform .20s ease";
+    p.style.transform="translateX("+(previewDireccion>0?w:-w)+"px)";
+    setTimeout(()=>{
+      if(previewEl===p){
+        p.remove();
+        previewEl=null;
+        previewDireccion=0;
+      }
+    },210);
+  }
 }
 
 function iniciarGestoVisor(event){
@@ -403,9 +646,14 @@ function iniciarGestoVisor(event){
   gestoHorizontal = false;
   desplazamientoActual = 0;
 
+  quitarPreview();
+  precargarAdyacentes();
+
   const c = contenidoVisor();
   if(c){
     c.style.transition = "none";
+    c.style.transform = "translateX(0)";
+    c.style.opacity = "1";
   }
 }
 
@@ -417,11 +665,9 @@ function moverGestoVisor(event){
   const dx = t.clientX - toqueInicioX;
   const dy = t.clientY - toqueInicioY;
 
-  // Decide la intención del gesto solo después de un pequeño movimiento.
   if(!gestoHorizontal){
     if(Math.abs(dx) < 10 && Math.abs(dy) < 10)return;
 
-    // Si el movimiento es principalmente vertical, dejamos que haga scroll.
     if(Math.abs(dy) >= Math.abs(dx)){
       toqueInicioX = null;
       toqueInicioY = null;
@@ -432,75 +678,27 @@ function moverGestoVisor(event){
   }
 
   if(!gestoHorizontal)return;
-
-  // Solo cuando ya sabemos que es horizontal impedimos el scroll de Safari.
   if(event.cancelable)event.preventDefault();
+
+  const direccion = dx < 0 ? 1 : -1;
+  const nuevoIndice = indicePruebaActual + direccion;
+  const hayAdyacente = nuevoIndice >= 0 && nuevoIndice < ordenPruebas.length;
 
   let desplazamiento = dx;
 
-  // Resistencia si intenta pasar más allá de la primera o última prueba.
-  const intentandoAnterior = dx > 0;
-  const intentandoSiguiente = dx < 0;
-  const sinAnterior = indicePruebaActual <= 0;
-  const sinSiguiente = indicePruebaActual >= ordenPruebas.length - 1;
-
-  if(
-    (intentandoAnterior && sinAnterior) ||
-    (intentandoSiguiente && sinSiguiente)
-  ){
+  if(!hayAdyacente){
     desplazamiento = dx * 0.28;
+    quitarPreview();
+  }else{
+    asegurarPreview(direccion);
   }
 
   desplazamientoActual = desplazamiento;
-
-  const c = contenidoVisor();
-  if(c){
-    c.style.transform = "translateX(" + desplazamiento + "px)";
-    c.style.opacity = String(Math.max(0.72, 1 - Math.abs(desplazamiento) / 900));
-  }
+  posicionarPaginas(desplazamiento);
 }
 
 async function animarCambioPrueba(direccion){
-  const c = contenidoVisor();
-  if(!c)return;
-
-  const ancho = Math.max(window.innerWidth, 320);
-  const salida = direccion > 0 ? -ancho : ancho;
-  const entrada = direccion > 0 ? ancho : -ancho;
-  const nuevoIndice = indicePruebaActual + direccion;
-
-  if(nuevoIndice < 0 || nuevoIndice >= ordenPruebas.length){
-    c.style.transition = "transform .20s ease, opacity .16s ease";
-    c.style.transform = "translateX(0)";
-    c.style.opacity = "1";
-    return;
-  }
-
-  // Sale la prueba actual.
-  c.style.transition = "transform .18s ease, opacity .16s ease";
-  c.style.transform = "translateX(" + salida + "px)";
-  c.style.opacity = "0.45";
-
-  await new Promise(resolve => setTimeout(resolve, 180));
-
-  // Carga la nueva prueba sin cerrar el visor.
-  await abrir(ordenPruebas[nuevoIndice]);
-
-  // La colocamos fuera del lado contrario.
-  const nuevoContenido = contenidoVisor();
-  nuevoContenido.style.transition = "none";
-  nuevoContenido.style.transform = "translateX(" + entrada + "px)";
-  nuevoContenido.style.opacity = "0.45";
-
-  // Forzar reflow.
-  void nuevoContenido.offsetWidth;
-
-  // Entra a su posición.
-  requestAnimationFrame(() => {
-    nuevoContenido.style.transition = "transform .22s ease, opacity .18s ease";
-    nuevoContenido.style.transform = "translateX(0)";
-    nuevoContenido.style.opacity = "1";
-  });
+  await finalizarCambioCarrusel(direccion);
 }
 
 function terminarGestoVisor(event){
@@ -508,8 +706,8 @@ function terminarGestoVisor(event){
     return;
   }
 
-  let dx = desplazamientoActual;
-  let dt = Date.now() - toqueInicioTiempo;
+  const dx = desplazamientoActual;
+  const dt = Date.now() - toqueInicioTiempo;
 
   toqueInicioX = null;
   toqueInicioY = null;
@@ -523,9 +721,7 @@ function terminarGestoVisor(event){
   if(!c)return;
 
   if(!eraHorizontal){
-    c.style.transition = "";
-    c.style.transform = "translateX(0)";
-    c.style.opacity = "1";
+    regresarCarrusel();
     return;
   }
 
@@ -538,10 +734,7 @@ function terminarGestoVisor(event){
       animarCambioPrueba(-1);
     }
   }else{
-    // No alcanzó el umbral: regresa suavemente.
-    c.style.transition = "transform .20s ease, opacity .16s ease";
-    c.style.transform = "translateX(0)";
-    c.style.opacity = "1";
+    regresarCarrusel();
   }
 }
 
@@ -572,7 +765,7 @@ document.addEventListener("keydown", event => {
 });
 window.addEventListener("resize",()=>{if(puntosActuales.length)dibujar(puntosActuales)});
 
-(async()=>{try{await abrirDB();await lista()}catch{msg("No se pudo abrir el almacenamiento local.")}if("serviceWorker"in navigator){try{await navigator.serviceWorker.register("./sw.js?v=8", { updateViaCache: "none" })}catch{}}})();
+(async()=>{try{await abrirDB();await lista()}catch{msg("No se pudo abrir el almacenamiento local.")}if("serviceWorker"in navigator){try{await navigator.serviceWorker.register("./sw.js?v=9", { updateViaCache: "none" })}catch{}}})();
 </script>
 </body>
 </html>
