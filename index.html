@@ -1,539 +1,192 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#101010">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Visor 130 V">
-  <title>Visor 130 VDC</title>
-  <link rel="manifest" href="./manifest.webmanifest">
-  <link rel="apple-touch-icon" href="./icon-192.png">
-  <style>
-    :root { color-scheme: dark; }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      padding: max(18px, env(safe-area-inset-top)) 16px max(28px, env(safe-area-inset-bottom));
-      background: #101010;
-      color: #fff;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
-    }
-    .contenedor { max-width: 760px; margin: 0 auto; }
-    h1 { text-align:center; font-size:24px; letter-spacing:1px; margin:10px 0 6px; }
-    .subtitulo { text-align:center; color:#aaa; font-size:13px; margin-bottom:20px; }
-    .panel {
-      background:#202020; border:1px solid #2b2b2b; border-radius:14px;
-      padding:16px; margin-bottom:16px;
-    }
-    .filaCabecera { display:flex; justify-content:space-between; align-items:center; gap:12px; }
-    .estadoOffline { font-size:12px; font-weight:700; color:#69f0ae; }
-    .boton {
-      border:0; border-radius:10px; padding:12px 15px; font-size:16px; font-weight:650;
-      background:#eee; color:#111; cursor:pointer;
-    }
-    .boton:active { transform:scale(.98); }
-    .botonPeligro { background:#ff5252; color:white; }
-    .botonSecundario { background:#353535; color:white; border:1px solid #555; }
-    input[type=file] { display:none; }
-    .importar {
-      display:block; width:100%; text-align:center; background:#00c853; color:#07130a;
-      padding:14px; border-radius:10px; font-size:17px; font-weight:750; cursor:pointer;
-    }
-    .nota { color:#bdbdbd; font-size:13px; line-height:1.45; margin:10px 2px 0; }
-    .lista { display:flex; flex-direction:column; gap:8px; margin-top:12px; }
-    .archivo {
-      width:100%; text-align:left; background:#2b2b2b; border:1px solid #444; color:white;
-      border-radius:10px; padding:12px; cursor:pointer;
-    }
-    .archivoNombre { font-weight:700; word-break:break-word; }
-    .archivoMeta { color:#aaa; font-size:12px; margin-top:5px; }
-    .vacio { text-align:center; color:#999; padding:18px 4px 6px; }
-    #visor { display:none; }
-    #nombrePrueba { text-align:center; font-size:18px; font-weight:750; word-break:break-word; margin-bottom:14px; }
-    canvas { display:block; width:100%; background:white; border-radius:10px; touch-action:manipulation; }
-    .estabilidad {
-      display:none; margin-top:12px; padding:10px 12px; border-radius:8px;
-      background:#2b2b2b; text-align:center; font-size:18px; font-weight:bold;
-    }
-    .resultado {
-      display:flex; justify-content:space-between; gap:12px;
-      border-bottom:1px solid #555; padding:9px 0; font-size:18px;
-    }
-    .resultado:last-child { border-bottom:0; }
-    .valor { font-weight:700; white-space:nowrap; }
-    .separador { height:14px; }
-    .acciones { display:flex; flex-wrap:wrap; justify-content:center; gap:8px; margin-top:16px; }
-    .mensaje {
-      display:none; position:fixed; left:50%; bottom:max(22px, env(safe-area-inset-bottom));
-      transform:translateX(-50%); background:#333; color:white; border:1px solid #555;
-      padding:10px 14px; border-radius:9px; z-index:20; max-width:90%; text-align:center;
-    }
-    .installHint { display:none; color:#ffcc80; font-size:13px; line-height:1.45; margin-top:10px; }
-    @media (max-width:520px) {
-      body { padding-left:12px; padding-right:12px; }
-      .panel { padding:14px; }
-      .resultado { font-size:17px; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101010">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Descarga baterías">
+<title>Prueba de descarga de banco de baterías</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<style>
+:root{color-scheme:dark}*{box-sizing:border-box}
+body{margin:0;padding:max(18px,env(safe-area-inset-top)) 14px max(24px,env(safe-area-inset-bottom));background:#101010;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+.contenedor{max-width:760px;margin:0 auto}
+.tituloPrincipal{text-align:center;font-size:22px;font-weight:800;letter-spacing:.5px;line-height:1.25;margin:12px 42px 22px}
+.panel,.panelVisor{background:#202020;border:1px solid #2b2b2b;border-radius:14px;padding:14px}
+.cabeceraLista{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.cabeceraLista strong{font-size:17px;letter-spacing:.5px}
+.accionesCabecera{display:flex;gap:8px}
+.botonIcono{width:46px;height:46px;border:0;border-radius:11px;background:#eee;color:#111;font-size:27px;line-height:1;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+.botonIcono:active{transform:scale(.96)}.botonIcono.activo{background:#ff5252;color:#fff}
+.lista{display:flex;flex-direction:column;gap:8px}.filaPrueba{display:flex;align-items:stretch;gap:8px}
+.archivo{flex:1;min-width:0;text-align:left;background:#2b2b2b;border:1px solid #444;color:#fff;border-radius:10px;padding:12px;cursor:pointer}
+.archivoNombre{font-size:16px;font-weight:750;word-break:break-word}.archivoMeta{color:#aaa;font-size:12px;margin-top:5px}
+.botonEliminarFila{display:none;width:48px;border:0;border-radius:10px;background:#ff5252;color:#fff;font-size:22px;cursor:pointer}
+.modoEliminar .botonEliminarFila{display:block}.vacio{text-align:center;color:#999;padding:22px 6px}input[type=file]{display:none}
+#visor{display:none;position:fixed;inset:0;z-index:1000;overflow-y:auto;background:#101010;padding:max(72px,calc(env(safe-area-inset-top) + 58px)) 14px max(26px,env(safe-area-inset-bottom))}
+#visor.activo{display:block}.visorContenido{max-width:760px;margin:0 auto}
+.cerrarVisor{position:fixed;top:max(12px,env(safe-area-inset-top));right:14px;z-index:1100;width:46px;height:46px;border:0;border-radius:50%;background:#eee;color:#111;font-size:27px;font-weight:700;line-height:1;cursor:pointer}
+#nombrePrueba{text-align:center;font-size:18px;font-weight:750;word-break:break-word;margin:0 50px 16px}
+.panelVisor{margin-bottom:14px}canvas{display:block;width:100%;height:auto;background:white;border-radius:10px}
+.estabilidad{display:none;margin-top:12px;padding:10px 12px;border-radius:8px;background:#2b2b2b;text-align:center;font-size:18px;font-weight:bold}
+.resultado{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid #555;padding:9px 0;font-size:18px}.resultado:last-child{border-bottom:0}.valor{font-weight:700;white-space:nowrap}.separador{height:14px}
+.mensaje{display:none;position:fixed;left:50%;bottom:max(22px,env(safe-area-inset-bottom));transform:translateX(-50%);background:#333;color:white;border:1px solid #555;padding:10px 14px;border-radius:9px;z-index:2000;max-width:90%;text-align:center}
+@media(max-width:520px){body{padding-left:12px;padding-right:12px}.panel,.panelVisor{padding:12px}.resultado{font-size:17px}.tituloPrincipal{font-size:20px}}
+</style>
 </head>
 <body>
-<div class="contenedor">
-  <div class="filaCabecera">
-    <div></div>
-    <div id="modo" class="estadoOffline">LISTO PARA USO OFFLINE</div>
-  </div>
-  <h1>VISOR DE PRUEBAS 130 VDC</h1>
-  <div class="subtitulo">Consulta independiente del ESP32</div>
-
+<main id="pantallaLista" class="contenedor">
+  <div class="tituloPrincipal">PRUEBA DE DESCARGA DE BANCO DE BATERÍAS</div>
   <section class="panel">
-    <label class="importar" for="selectorCSV">IMPORTAR CSV</label>
-    <input id="selectorCSV" type="file" accept=".csv,text/csv,text/plain" multiple>
-    <div class="nota">
-      Selecciona uno o varios CSV descargados del medidor. El archivo se copia al almacenamiento local de este visor.
-    </div>
-    <div id="installHint" class="installHint">
-      Para tenerlo como aplicación: en Safari toca Compartir → Agregar a pantalla de inicio → deja activado “Abrir como app web”.
-    </div>
-  </section>
-
-  <section class="panel">
-    <div class="filaCabecera">
+    <div class="cabeceraLista">
       <strong>PRUEBAS GUARDADAS</strong>
-      <button id="btnActualizar" class="boton botonSecundario" type="button">Actualizar</button>
+      <div class="accionesCabecera">
+        <button id="btnAgregar" class="botonIcono" type="button" aria-label="Cargar pruebas" title="Cargar pruebas">＋</button>
+        <button id="btnEditar" class="botonIcono" type="button" aria-label="Administrar pruebas" title="Administrar pruebas">⚙</button>
+      </div>
     </div>
+    <input id="selectorCarpeta" type="file" accept=".csv,text/csv,text/plain" webkitdirectory directory multiple>
     <div id="lista" class="lista"></div>
   </section>
+</main>
 
-  <section id="visor" class="panel">
+<section id="visor" aria-hidden="true">
+  <button id="btnCerrarVisor" class="cerrarVisor" type="button" aria-label="Cerrar">×</button>
+  <div class="visorContenido">
     <div id="nombrePrueba"></div>
-    <canvas id="grafica" width="900" height="470"></canvas>
-    <div id="estabilidad" class="estabilidad"></div>
-
-    <div class="separador"></div>
-    <div class="resultado"><span>Mínimo</span><span id="rMin" class="valor">--</span></div>
-    <div class="resultado"><span>Tiempo del mínimo</span><span id="rTMin" class="valor">--</span></div>
-    <div class="resultado"><span>Meseta</span><span id="rMeseta" class="valor">--</span></div>
-    <div class="resultado"><span>Tiempo de estabilización</span><span id="rTEstable" class="valor">--</span></div>
-    <div class="resultado"><span>Recuperación</span><span id="rRecuperacion" class="valor">--</span></div>
-
-    <div class="separador"></div>
-    <div class="resultado"><span>1 min</span><span id="r1" class="valor">--</span></div>
-    <div class="resultado"><span>10 min</span><span id="r10" class="valor">--</span></div>
-    <div class="resultado"><span>20 min</span><span id="r20" class="valor">--</span></div>
-    <div class="resultado"><span>30 min</span><span id="r30" class="valor">--</span></div>
-
-    <div class="acciones">
-      <button id="btnExportar" class="boton" type="button">Descargar CSV</button>
-      <button id="btnBorrar" class="boton botonPeligro" type="button">Borrar del visor</button>
-      <button id="btnCerrar" class="boton botonSecundario" type="button">Cerrar gráfica</button>
+    <div class="panelVisor">
+      <canvas id="grafica" width="900" height="470"></canvas>
+      <div id="estabilidad" class="estabilidad"></div>
     </div>
-  </section>
-</div>
+    <div class="panelVisor">
+      <div class="resultado"><span>Mínimo</span><span id="rMin" class="valor">--</span></div>
+      <div class="resultado"><span>Tiempo del mínimo</span><span id="rTMin" class="valor">--</span></div>
+      <div class="resultado"><span>Meseta</span><span id="rMeseta" class="valor">--</span></div>
+      <div class="resultado"><span>Tiempo de estabilización</span><span id="rTEstable" class="valor">--</span></div>
+      <div class="resultado"><span>Recuperación</span><span id="rRecuperacion" class="valor">--</span></div>
+      <div class="separador"></div>
+      <div class="resultado"><span>1 min</span><span id="r1" class="valor">--</span></div>
+      <div class="resultado"><span>10 min</span><span id="r10" class="valor">--</span></div>
+      <div class="resultado"><span>20 min</span><span id="r20" class="valor">--</span></div>
+      <div class="resultado"><span>30 min</span><span id="r30" class="valor">--</span></div>
+    </div>
+  </div>
+</section>
 <div id="mensaje" class="mensaje"></div>
 
 <script>
 "use strict";
+const DB_NAME="Visor130VDB", DB_VERSION=1, STORE="pruebas";
+let db=null, pruebaActual=null, puntosActuales=[], modoEliminar=false;
 
-const DB_NAME = "Visor130VDB";
-const DB_VERSION = 1;
-const STORE = "pruebas";
-let db = null;
-let pruebaActual = null;
-let puntosActuales = [];
+function msg(t){const e=document.getElementById("mensaje");e.textContent=t;e.style.display="block";clearTimeout(msg.timer);msg.timer=setTimeout(()=>e.style.display="none",2400)}
+function abrirDB(){return new Promise((ok,no)=>{const r=indexedDB.open(DB_NAME,DB_VERSION);r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains(STORE)){const s=d.createObjectStore(STORE,{keyPath:"id",autoIncrement:true});s.createIndex("nombre","nombre",{unique:false});s.createIndex("importado","importado",{unique:false})}};r.onsuccess=()=>{db=r.result;ok(db)};r.onerror=()=>no(r.error)})}
+function st(m="readonly"){return db.transaction(STORE,m).objectStore(STORE)}
+function guardar(x){return new Promise((ok,no)=>{const r=st("readwrite").add(x);r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)})}
+function todos(){return new Promise((ok,no)=>{const r=st().getAll();r.onsuccess=()=>ok(r.result||[]);r.onerror=()=>no(r.error)})}
+function uno(id){return new Promise((ok,no)=>{const r=st().get(Number(id));r.onsuccess=()=>ok(r.result||null);r.onerror=()=>no(r.error)})}
+function borrar(id){return new Promise((ok,no)=>{const r=st("readwrite").delete(Number(id));r.onsuccess=()=>ok();r.onerror=()=>no(r.error)})}
+async function hash(texto){const b=new TextEncoder().encode(texto),d=await crypto.subtle.digest("SHA-256",b);return Array.from(new Uint8Array(d)).map(x=>x.toString(16).padStart(2,"0")).join("")}
+const norm=n=>String(n||"").trim().toLowerCase();
 
-function mensaje(txt) {
-  const e = document.getElementById("mensaje");
-  e.textContent = txt;
-  e.style.display = "block";
-  clearTimeout(mensaje.timer);
-  mensaje.timer = setTimeout(() => e.style.display = "none", 2400);
+function csvPuntos(texto){
+  const lineas=texto.replace(/^\uFEFF/,"").split(/\r?\n/),r=[];
+  for(const raw of lineas){const l=raw.trim();if(!l)continue;const p=l.split(",");if(p.length<2)continue;const t=parseFloat(p[0]),v=parseFloat(p[1]);if(Number.isFinite(t)&&Number.isFinite(v))r.push([t,v])}
+  return r;
 }
-
-function abrirDB() {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, DB_VERSION);
-    req.onupgradeneeded = () => {
-      const d = req.result;
-      if (!d.objectStoreNames.contains(STORE)) {
-        const s = d.createObjectStore(STORE, { keyPath: "id", autoIncrement: true });
-        s.createIndex("nombre", "nombre", { unique: false });
-        s.createIndex("importado", "importado", { unique: false });
-      }
-    };
-    req.onsuccess = () => { db = req.result; resolve(db); };
-    req.onerror = () => reject(req.error);
-  });
-}
-
-function txStore(mode="readonly") {
-  return db.transaction(STORE, mode).objectStore(STORE);
-}
-
-function guardarPrueba(registro) {
-  return new Promise((resolve, reject) => {
-    const req = txStore("readwrite").add(registro);
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-  });
-}
-
-function obtenerPruebas() {
-  return new Promise((resolve, reject) => {
-    const req = txStore().getAll();
-    req.onsuccess = () => resolve(req.result || []);
-    req.onerror = () => reject(req.error);
-  });
-}
-
-function obtenerPrueba(id) {
-  return new Promise((resolve, reject) => {
-    const req = txStore().get(Number(id));
-    req.onsuccess = () => resolve(req.result || null);
-    req.onerror = () => reject(req.error);
-  });
-}
-
-function borrarPrueba(id) {
-  return new Promise((resolve, reject) => {
-    const req = txStore("readwrite").delete(Number(id));
-    req.onsuccess = () => resolve();
-    req.onerror = () => reject(req.error);
-  });
-}
-
-function convertirCSVaPuntos(texto) {
-  const lineas = texto.replace(/^\uFEFF/, "").split(/\r?\n/);
-  const resultado = [];
-  for (let i = 0; i < lineas.length; i++) {
-    const linea = lineas[i].trim();
-    if (!linea) continue;
-    const partes = linea.split(",");
-    if (partes.length < 2) continue;
-    const tiempo = parseFloat(partes[0]);
-    const voltaje = parseFloat(partes[1]);
-    if (Number.isFinite(tiempo) && Number.isFinite(voltaje)) {
-      resultado.push([tiempo, voltaje]);
-    }
+function valorSegundo(d,s){for(const p of d)if(Number(p[0])===s)return p[1];return null}
+function regresion(d,a,b){const n=b-a+1;if(n<2)return null;let sx=0,sy=0,sxy=0,sxx=0,x0=d[a][0];for(let i=a;i<=b;i++){const x=d[i][0]-x0,y=d[i][1];sx+=x;sy+=y;sxy+=x*y;sxx+=x*x}const den=n*sxx-sx*sx;if(Math.abs(den)<1e-6)return null;const m=(n*sxy-sx*sy)/den,c=(sy-m*sx)/n,xf=d[b][0]-x0;return{pendiente:m,valor:c+m*xf}}
+function estabilidad(d){
+  const V=60,R=1.0,U=.15,S=120;if(d.length<V)return{confirmada:false,voltaje:null,tiempo:null};
+  const ps=new Array(d.length).fill(null),vs=new Array(d.length).fill(null);
+  for(let i=V-1;i<d.length;i++){const g=regresion(d,i-V+1,i);if(g){ps[i]=g.pendiente*60;vs[i]=g.valor}}
+  let min=d[0][1],imin=0,rec=false,c=0;
+  for(let i=1;i<d.length;i++){
+    if(d[i][1]<min){min=d[i][1];imin=i;rec=false;c=0}
+    if(i<=imin)continue;
+    if(!rec){if(d[i][1]-min>=R)rec=true;else continue}
+    if(ps[i]!==null&&Math.abs(ps[i])<=U){c++;if(c>=S)return{confirmada:true,voltaje:vs[i]!==null?vs[i]:d[i][1],tiempo:d[i][0]}}else c=0;
   }
-  return resultado;
+  return{confirmada:false,voltaje:null,tiempo:null}
+}
+function analizar(d){
+  if(!d.length)return{};
+  let min=Number(d[0][1]),tmin=Number(d[0][0]);for(let i=1;i<d.length;i++){const v=Number(d[i][1]);if(Number.isFinite(v)&&v<min){min=v;tmin=Number(d[i][0])}}
+  const e=estabilidad(d),meseta=e.confirmada?Number(e.voltaje):null,te=e.confirmada?Number(e.tiempo):null,rec=e.confirmada&&Number.isFinite(meseta)?meseta-min:null;
+  return{minimo:min,tiempoMinimo:tmin,meseta,tiempoEstabilizacion:te,recuperacion:rec,estabilizada:e.confirmada}
+}
+const fv=v=>v===null||!Number.isFinite(Number(v))?"--":Number(v).toFixed(2)+" V";
+function ft(s){if(s===null||!Number.isFinite(Number(s)))return"--";const n=Math.max(0,Math.round(Number(s)));return Math.floor(n/60)+":"+String(n%60).padStart(2,"0")+" min"}
+function dibujar(d){
+  const c=document.getElementById("grafica"),x=c.getContext("2d"),W=c.width,H=c.height,L=66,R=18,T=20,B=50,aw=W-L-R,ah=H-T-B;
+  const TMAX=Math.max(1800,d.length?Math.ceil(d[d.length-1][0]/300)*300:1800);let vmin=117,vmax=132;
+  if(d.length){let mi=d[0][1],ma=d[0][1];for(let i=1;i<d.length;i++){mi=Math.min(mi,d[i][1]);ma=Math.max(ma,d[i][1])}if(mi<117)vmin=Math.floor(mi/5)*5;if(ma>132)vmax=Math.ceil(ma/5)*5}
+  if(vmax-vmin<10)vmin=vmax-10;x.clearRect(0,0,W,H);x.fillStyle="white";x.fillRect(0,0,W,H);x.font="14px Arial";
+  const rango=vmax-vmin;let pv=1;if(rango>20&&rango<=30)pv=2;if(rango>30)pv=5;const primero=Math.ceil(vmin/pv)*pv;
+  for(let v=primero;v<=vmax+.001;v+=pv){const y=T+((vmax-v)/(vmax-vmin))*ah;x.strokeStyle="#ddd";x.lineWidth=1;x.beginPath();x.moveTo(L,y);x.lineTo(L+aw,y);x.stroke();x.fillStyle="black";x.textAlign="right";x.fillText(v.toFixed(0)+" V",L-6,y+5)}
+  const mm=Math.ceil(TMAX/60),pm=mm<=30?5:(mm<=60?10:15);
+  for(let m=0;m<=mm;m+=pm){const s=m*60,xx=L+(s/TMAX)*aw;x.strokeStyle="#ddd";x.beginPath();x.moveTo(xx,T);x.lineTo(xx,T+ah);x.stroke();x.fillStyle="black";x.textAlign="center";x.fillText(m+"m",xx,H-18)}
+  x.strokeStyle="black";x.lineWidth=2;x.beginPath();x.moveTo(L,T);x.lineTo(L,T+ah);x.lineTo(L+aw,T+ah);x.stroke();
+  if(!d.length)return;const X=s=>L+(s/TMAX)*aw,Y=v=>T+((vmax-v)/(vmax-vmin))*ah;x.lineWidth=1.5;
+  for(let i=1;i<d.length;i++){const [t1,v1]=d[i-1],[t2,v2]=d[i];x.strokeStyle=((v1+v2)/2<=110)?"red":"blue";x.beginPath();x.moveTo(X(t1),Y(v1));x.lineTo(X(t2),Y(v2));x.stroke()}
 }
 
-function obtenerValorSegundo(datos, segundoBuscado) {
-  for (let i = 0; i < datos.length; i++) {
-    if (Number(datos[i][0]) === segundoBuscado) return datos[i][1];
+async function importar(files){
+  const csv=[...files].filter(f=>f.name.toLowerCase().endsWith(".csv"));
+  if(!csv.length){msg("La carpeta no contiene archivos CSV.");return}
+  const e=await todos(), nombres=new Set(e.map(p=>norm(p.nombre))), hashes=new Set();
+  for(const p of e){try{hashes.add(p.hash||await hash(p.contenido||""))}catch{}}
+  let a=0,d=0,i=0;
+  for(const f of csv){
+    try{
+      const texto=await f.text(),p=csvPuntos(texto);if(!p.length){i++;continue}
+      const n=norm(f.name),h=await hash(texto);
+      if(nombres.has(n)||hashes.has(h)){d++;continue}
+      await guardar({nombre:f.name,contenido:texto,hash:h,importado:Date.now(),muestras:p.length,duracion:p[p.length-1][0]});
+      nombres.add(n);hashes.add(h);a++;
+    }catch{i++}
   }
-  return null;
+  await lista();
+  let t=`${a} ${a===1?"prueba agregada":"pruebas agregadas"}`;if(d)t+=` · ${d} duplicada${d===1?"":"s"} omitida${d===1?"":"s"}`;if(i)t+=` · ${i} inválida${i===1?"":"s"}`;msg(t)
 }
 
-function calcularRegresion(datos, inicio, fin) {
-  const n = fin - inicio + 1;
-  if (n < 2) return null;
-  let sumaX=0, sumaY=0, sumaXY=0, sumaXX=0;
-  const x0 = datos[inicio][0];
-  for (let i=inicio; i<=fin; i++) {
-    const x = datos[i][0] - x0;
-    const y = datos[i][1];
-    sumaX += x; sumaY += y; sumaXY += x*y; sumaXX += x*x;
-  }
-  const denominador = n*sumaXX - sumaX*sumaX;
-  if (Math.abs(denominador) < 0.000001) return null;
-  const pendiente = (n*sumaXY - sumaX*sumaY) / denominador;
-  const intercepto = (sumaY - pendiente*sumaX) / n;
-  const xFinal = datos[fin][0] - x0;
-  return { pendiente, valor: intercepto + pendiente*xFinal };
-}
-
-// Misma lógica de estabilidad usada en el programa V6 del medidor.
-function detectarEstabilidad(datos) {
-  const VENTANA = 60;
-  const RECUPERACION_MINIMA = 1.00;
-  const UMBRAL_PENDIENTE = 0.15;
-  const SOSTENIDO = 120;
-
-  if (datos.length < VENTANA) {
-    return { confirmada:false, voltaje:null, tiempo:null };
-  }
-
-  const pendientes = new Array(datos.length).fill(null);
-  const valoresReg = new Array(datos.length).fill(null);
-
-  for (let i=VENTANA-1; i<datos.length; i++) {
-    const reg = calcularRegresion(datos, i-VENTANA+1, i);
-    if (reg) {
-      pendientes[i] = reg.pendiente * 60.0;
-      valoresReg[i] = reg.valor;
-    }
-  }
-
-  let minimo = datos[0][1];
-  let indiceMinimo = 0;
-  let recuperacionHabilitada = false;
-  let contadorEstable = 0;
-
-  for (let i=1; i<datos.length; i++) {
-    if (datos[i][1] < minimo) {
-      minimo = datos[i][1];
-      indiceMinimo = i;
-      recuperacionHabilitada = false;
-      contadorEstable = 0;
-    }
-
-    if (i <= indiceMinimo) continue;
-
-    if (!recuperacionHabilitada) {
-      if ((datos[i][1] - minimo) >= RECUPERACION_MINIMA) {
-        recuperacionHabilitada = true;
-      } else {
-        continue;
-      }
-    }
-
-    if (pendientes[i] !== null && Math.abs(pendientes[i]) <= UMBRAL_PENDIENTE) {
-      contadorEstable++;
-      if (contadorEstable >= SOSTENIDO) {
-        return {
-          confirmada:true,
-          voltaje: valoresReg[i] !== null ? valoresReg[i] : datos[i][1],
-          tiempo: datos[i][0]
-        };
-      }
-    } else {
-      contadorEstable = 0;
-    }
-  }
-  return { confirmada:false, voltaje:null, tiempo:null };
-}
-
-function analizarPrueba(datos) {
-  if (!datos.length) return {};
-  let minimo = Number(datos[0][1]);
-  let tiempoMinimo = Number(datos[0][0]);
-  for (let i=1; i<datos.length; i++) {
-    const v = Number(datos[i][1]);
-    if (Number.isFinite(v) && v < minimo) {
-      minimo = v;
-      tiempoMinimo = Number(datos[i][0]);
-    }
-  }
-  const est = detectarEstabilidad(datos);
-  const meseta = est.confirmada ? Number(est.voltaje) : null;
-  const tiempoEstabilizacion = est.confirmada ? Number(est.tiempo) : null;
-  const recuperacion = est.confirmada && Number.isFinite(meseta) ? meseta-minimo : null;
-  return { minimo, tiempoMinimo, meseta, tiempoEstabilizacion, recuperacion, estabilizada:est.confirmada };
-}
-
-function formatoV(v) {
-  return v === null || !Number.isFinite(Number(v)) ? "--" : Number(v).toFixed(2) + " V";
-}
-
-function formatoTiempo(s) {
-  if (s === null || !Number.isFinite(Number(s))) return "--";
-  const total = Math.max(0, Math.round(Number(s)));
-  return Math.floor(total/60) + ":" + String(total%60).padStart(2,"0") + " min";
-}
-
-function colorPorVoltaje(v1, v2, normal) {
-  return ((v1+v2)/2 <= 110) ? "red" : normal;
-}
-
-function dibujarGrafica(datos) {
-  const canvas = document.getElementById("grafica");
-  const ctx = canvas.getContext("2d");
-  const W = canvas.width, H = canvas.height;
-  const izquierda=66, derecha=18, arriba=20, abajo=50;
-  const ancho=W-izquierda-derecha, alto=H-arriba-abajo;
-  const TMAX = Math.max(1800, datos.length ? Math.ceil(datos[datos.length-1][0]/300)*300 : 1800);
-
-  let VMIN=117, VMAX=132;
-  if (datos.length) {
-    let minimo=datos[0][1], maximo=datos[0][1];
-    for (let i=1; i<datos.length; i++) {
-      minimo=Math.min(minimo,datos[i][1]);
-      maximo=Math.max(maximo,datos[i][1]);
-    }
-    if (minimo < 117) VMIN=Math.floor(minimo/5)*5;
-    if (maximo > 132) VMAX=Math.ceil(maximo/5)*5;
-  }
-  if (VMAX-VMIN < 10) VMIN=VMAX-10;
-
-  ctx.clearRect(0,0,W,H);
-  ctx.fillStyle="white"; ctx.fillRect(0,0,W,H);
-  ctx.font="14px Arial";
-
-  const rango=VMAX-VMIN;
-  let pasoV=1;
-  if (rango>20 && rango<=30) pasoV=2;
-  if (rango>30) pasoV=5;
-  const primer=Math.ceil(VMIN/pasoV)*pasoV;
-
-  for (let v=primer; v<=VMAX+0.001; v+=pasoV) {
-    const y=arriba+((VMAX-v)/(VMAX-VMIN))*alto;
-    ctx.strokeStyle="#ddd"; ctx.lineWidth=1;
-    ctx.beginPath(); ctx.moveTo(izquierda,y); ctx.lineTo(izquierda+ancho,y); ctx.stroke();
-    ctx.fillStyle="black"; ctx.textAlign="right"; ctx.fillText(v.toFixed(0)+" V", izquierda-6, y+5);
-  }
-
-  const maxMinutos = Math.ceil(TMAX/60);
-  const pasoMin = maxMinutos <= 30 ? 5 : (maxMinutos <= 60 ? 10 : 15);
-  for (let minuto=0; minuto<=maxMinutos; minuto+=pasoMin) {
-    const segundo=minuto*60;
-    const x=izquierda+(segundo/TMAX)*ancho;
-    ctx.strokeStyle="#ddd"; ctx.lineWidth=1;
-    ctx.beginPath(); ctx.moveTo(x,arriba); ctx.lineTo(x,arriba+alto); ctx.stroke();
-    ctx.fillStyle="black"; ctx.textAlign="center"; ctx.fillText(minuto+"m", x, H-18);
-  }
-
-  ctx.strokeStyle="black"; ctx.lineWidth=2;
-  ctx.beginPath(); ctx.moveTo(izquierda,arriba); ctx.lineTo(izquierda,arriba+alto); ctx.lineTo(izquierda+ancho,arriba+alto); ctx.stroke();
-
-  if (!datos.length) return;
-  const X = s => izquierda+(s/TMAX)*ancho;
-  const Y = v => arriba+((VMAX-v)/(VMAX-VMIN))*alto;
-
-  ctx.lineWidth=1.5;
-  for (let i=1; i<datos.length; i++) {
-    const [t1,v1]=datos[i-1], [t2,v2]=datos[i];
-    ctx.strokeStyle=colorPorVoltaje(v1,v2,"blue");
-    ctx.beginPath(); ctx.moveTo(X(t1),Y(v1)); ctx.lineTo(X(t2),Y(v2)); ctx.stroke();
+async function lista(){
+  const cont=document.getElementById("lista"),ps=await todos();ps.sort((a,b)=>b.importado-a.importado);cont.innerHTML="";
+  if(!ps.length){cont.innerHTML='<div class="vacio">No hay pruebas guardadas.</div>';return}
+  for(const p of ps){
+    const f=document.createElement("div");f.className="filaPrueba";
+    const b=document.createElement("button");b.className="archivo";b.type="button";b.innerHTML='<div class="archivoNombre"></div><div class="archivoMeta"></div>';
+    b.querySelector(".archivoNombre").textContent=p.nombre;b.querySelector(".archivoMeta").textContent=ft(p.duracion);b.onclick=()=>{if(!modoEliminar)abrir(p.id)};
+    const del=document.createElement("button");del.className="botonEliminarFila";del.type="button";del.textContent="🗑";del.setAttribute("aria-label","Eliminar prueba");
+    del.onclick=async ev=>{ev.stopPropagation();if(confirm("¿Eliminar "+p.nombre+" del visor?")){await borrar(p.id);await lista();msg("Prueba eliminada.")}};
+    f.append(b,del);cont.appendChild(f)
   }
 }
 
-async function importarArchivos(files) {
-  let ok=0, malos=0;
-  for (const file of files) {
-    try {
-      const texto = await file.text();
-      const puntos = convertirCSVaPuntos(texto);
-      if (!puntos.length) { malos++; continue; }
-      await guardarPrueba({
-        nombre:file.name,
-        contenido:texto,
-        importado:Date.now(),
-        muestras:puntos.length,
-        duracion:puntos[puntos.length-1][0]
-      });
-      ok++;
-    } catch (_) { malos++; }
-  }
-  await renderLista();
-  if (ok) mensaje(ok === 1 ? "Prueba guardada en el visor." : ok + " pruebas guardadas en el visor.");
-  if (malos) mensaje("Algunos archivos no tenían el formato esperado.");
+async function abrir(id){
+  const p=await uno(id);if(!p)return;const d=csvPuntos(p.contenido);if(!d.length){msg("El CSV no contiene datos válidos.");return}
+  pruebaActual=p;puntosActuales=d;document.getElementById("nombrePrueba").textContent=p.nombre;
+  const v=document.getElementById("visor");v.classList.add("activo");v.setAttribute("aria-hidden","false");document.body.style.overflow="hidden";v.scrollTop=0;dibujar(d);
+  const a=analizar(d);document.getElementById("rMin").textContent=fv(a.minimo);document.getElementById("rTMin").textContent=ft(a.tiempoMinimo);
+  document.getElementById("rMeseta").textContent=fv(a.meseta);document.getElementById("rTEstable").textContent=ft(a.tiempoEstabilizacion);
+  document.getElementById("rRecuperacion").textContent=a.recuperacion===null?"--":(a.recuperacion>=0?"+":"")+Number(a.recuperacion).toFixed(2)+" V";
+  document.getElementById("r1").textContent=fv(valorSegundo(d,60));document.getElementById("r10").textContent=fv(valorSegundo(d,600));
+  document.getElementById("r20").textContent=fv(valorSegundo(d,1200));document.getElementById("r30").textContent=fv(valorSegundo(d,1800));
+  const est=document.getElementById("estabilidad");if(a.estabilizada){est.style.display="block";est.textContent="ESTABILIZADO — "+Number(a.meseta).toFixed(2)+" V"}else{est.style.display="none";est.textContent=""}
 }
+function cerrar(){const v=document.getElementById("visor");v.classList.remove("activo");v.setAttribute("aria-hidden","true");document.body.style.overflow="";pruebaActual=null;puntosActuales=[]}
+function edit(){modoEliminar=!modoEliminar;document.getElementById("lista").classList.toggle("modoEliminar",modoEliminar);document.getElementById("btnEditar").classList.toggle("activo",modoEliminar)}
 
-async function renderLista() {
-  const lista = document.getElementById("lista");
-  const pruebas = await obtenerPruebas();
-  pruebas.sort((a,b) => b.importado-a.importado);
-  lista.innerHTML="";
-  if (!pruebas.length) {
-    lista.innerHTML='<div class="vacio">Todavía no hay pruebas guardadas.</div>';
-    return;
-  }
-  for (const p of pruebas) {
-    const b=document.createElement("button");
-    b.className="archivo";
-    b.type="button";
-    const fecha=new Date(p.importado).toLocaleString("es-MX");
-    b.innerHTML='<div class="archivoNombre"></div><div class="archivoMeta"></div>';
-    b.querySelector(".archivoNombre").textContent=p.nombre;
-    b.querySelector(".archivoMeta").textContent =
-      (p.muestras || "?") + " muestras · " + formatoTiempo(p.duracion) + " · importada " + fecha;
-    b.addEventListener("click",()=>abrirPrueba(p.id));
-    lista.appendChild(b);
-  }
-}
+document.getElementById("btnAgregar").onclick=()=>document.getElementById("selectorCarpeta").click();
+document.getElementById("selectorCarpeta").onchange=async e=>{const f=[...e.target.files];e.target.value="";if(f.length)await importar(f)};
+document.getElementById("btnEditar").onclick=edit;
+document.getElementById("btnCerrarVisor").onclick=cerrar;
+window.addEventListener("resize",()=>{if(puntosActuales.length)dibujar(puntosActuales)});
 
-async function abrirPrueba(id) {
-  const p=await obtenerPrueba(id);
-  if (!p) return;
-  const datos=convertirCSVaPuntos(p.contenido);
-  if (!datos.length) { mensaje("El CSV no contiene datos válidos."); return; }
-  pruebaActual=p;
-  puntosActuales=datos;
-  document.getElementById("nombrePrueba").textContent=p.nombre;
-  document.getElementById("visor").style.display="block";
-  dibujarGrafica(datos);
-
-  const a=analizarPrueba(datos);
-  document.getElementById("rMin").textContent=formatoV(a.minimo);
-  document.getElementById("rTMin").textContent=formatoTiempo(a.tiempoMinimo);
-  document.getElementById("rMeseta").textContent=formatoV(a.meseta);
-  document.getElementById("rTEstable").textContent=formatoTiempo(a.tiempoEstabilizacion);
-  document.getElementById("rRecuperacion").textContent =
-    a.recuperacion === null ? "--" : (a.recuperacion>=0?"+":"") + Number(a.recuperacion).toFixed(2) + " V";
-
-  document.getElementById("r1").textContent=formatoV(obtenerValorSegundo(datos,60));
-  document.getElementById("r10").textContent=formatoV(obtenerValorSegundo(datos,600));
-  document.getElementById("r20").textContent=formatoV(obtenerValorSegundo(datos,1200));
-  document.getElementById("r30").textContent=formatoV(obtenerValorSegundo(datos,1800));
-
-  const est=document.getElementById("estabilidad");
-  if (a.estabilizada) {
-    est.style.display="block";
-    est.textContent="ESTABILIZADO — " + Number(a.meseta).toFixed(2) + " V";
-  } else {
-    est.style.display="none"; est.textContent="";
-  }
-  document.getElementById("visor").scrollIntoView({behavior:"smooth",block:"start"});
-}
-
-function descargarActual() {
-  if (!pruebaActual) return;
-  const blob=new Blob([pruebaActual.contenido], {type:"text/csv;charset=utf-8"});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement("a");
-  a.href=url; a.download=pruebaActual.nombre || "prueba.csv";
-  document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(()=>URL.revokeObjectURL(url),1000);
-}
-
-async function borrarActual() {
-  if (!pruebaActual) return;
-  if (!confirm("¿Borrar esta prueba del visor?\n\nEl CSV original de la app Archivos no se modifica.")) return;
-  await borrarPrueba(pruebaActual.id);
-  pruebaActual=null; puntosActuales=[];
-  document.getElementById("visor").style.display="none";
-  await renderLista();
-  mensaje("Prueba borrada del visor.");
-}
-
-function detectarInstalacion() {
-  const standalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
-  document.getElementById("installHint").style.display = standalone ? "none" : "block";
-}
-
-document.getElementById("selectorCSV").addEventListener("change", async e => {
-  const files=[...e.target.files];
-  e.target.value="";
-  if (files.length) await importarArchivos(files);
-});
-document.getElementById("btnActualizar").addEventListener("click",renderLista);
-document.getElementById("btnExportar").addEventListener("click",descargarActual);
-document.getElementById("btnBorrar").addEventListener("click",borrarActual);
-document.getElementById("btnCerrar").addEventListener("click",()=>{
-  document.getElementById("visor").style.display="none";
-  pruebaActual=null; puntosActuales=[];
-  window.scrollTo({top:0,behavior:"smooth"});
-});
-
-window.addEventListener("resize",()=>{ if (puntosActuales.length) dibujarGrafica(puntosActuales); });
-
-(async function iniciar() {
-  try {
-    await abrirDB();
-    await renderLista();
-  } catch (e) {
-    document.getElementById("modo").textContent="ERROR DE ALMACENAMIENTO";
-    mensaje("No se pudo abrir el almacenamiento local.");
-  }
-  detectarInstalacion();
-
-  if ("serviceWorker" in navigator) {
-    try { await navigator.serviceWorker.register("./sw.js"); } catch (_) {}
-  }
-})();
+(async()=>{try{await abrirDB();await lista()}catch{msg("No se pudo abrir el almacenamiento local.")}if("serviceWorker"in navigator){try{await navigator.serviceWorker.register("./sw.js")}catch{}}})();
 </script>
 </body>
 </html>

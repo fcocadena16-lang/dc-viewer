@@ -1,7 +1,7 @@
 {
-  "name": "Visor de Pruebas 130 VDC",
-  "short_name": "Visor 130 V",
-  "description": "Visor offline de archivos CSV generados por el medidor de descarga 130 VDC.",
+  "name": "Prueba de descarga de banco de baterías",
+  "short_name": "Descarga baterías",
+  "description": "Visor offline de pruebas de descarga de bancos de baterías.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
