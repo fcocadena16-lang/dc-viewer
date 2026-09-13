@@ -27,7 +27,7 @@
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-serif}
-body{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+body{padding-bottom:calc(22px + env(safe-area-inset-bottom))}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
 .hidden{display:none!important}
@@ -107,11 +107,6 @@ input[type=file]{display:none}
   </section>
 </div>
 
-<nav class="navbar" aria-label="Navegación principal">
-  <button class="navBtn active" data-tab="subestaciones" type="button"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M11 2h2l1 4h3l-3 4 2 2h2v2h-3l1 8h-2l-1-8h-2l-1 8H8l1-8H6v-2h2l2-2-3-4h3l1-4Zm1 4-.4 1.5h.8L12 6Zm-1.5 4L9 12h6l-1.5-2h-3Z"/></svg><span>Subestaciones</span></button>
-  <button class="navBtn" data-tab="ajustes" type="button"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M19.43 12.98c.04-.32.07-.65.07-.98s-.03-.66-.08-.98l2.11-1.65-2-3.46-2.49 1a7.5 7.5 0 0 0-1.7-.98L15 3.27h-4l-.35 2.66c-.61.25-1.18.58-1.7.98l-2.49-1-2 3.46 2.11 1.65c-.05.32-.08.66-.08.98s.03.66.08.98l-2.11 1.65 2 3.46 2.49-1c.52.4 1.09.73 1.7.98L11 20.73h4l.35-2.66c.61-.25 1.18-.58 1.7-.98l2.49 1 2-3.46-2.11-1.65ZM13 17a5 5 0 1 1 0-10 5 5 0 0 1 0 10Zm0-3a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/></svg><span>Ajustes</span></button>
-</nav>
-
 <section id="stationOverlay" class="overlay" aria-hidden="true">
   <div class="overlayHeader">
     <button class="backBtn" data-close="stationOverlay" type="button">‹</button>
@@ -164,7 +159,7 @@ input[type=file]{display:none}
 
 <script>
 "use strict";
-const APP_VERSION="13.4";
+const APP_VERSION="13.5";
 const DB_NAME="Visor130VDB", DB_VERSION=2;
 const STORE_TESTS="pruebas", STORE_STATIONS="subestaciones", STORE_RECORDS="registros";
 let db=null,currentTab="subestaciones",currentStationKey=null,currentRecordDate=null,currentRecordTestId=null;
@@ -208,11 +203,13 @@ function iconSvg(name){const m={
   plus:'<svg viewBox="0 0 24 24"><path fill="currentColor" d="M11 4h2v7h7v2h-7v7h-2v-7H4v-2h7V4Z"/></svg>',
   folder:'<svg viewBox="0 0 24 24"><path fill="currentColor" d="M3 6a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v1H3V6Zm0 5h18l-2 8a2 2 0 0 1-2 1H5a2 2 0 0 1-2-2v-7Z"/></svg>',
   pencil:'<svg viewBox="0 0 24 24"><path fill="currentColor" d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25Zm14.71-9.04a1 1 0 0 0 0-1.42l-2.5-2.5a1 1 0 0 0-1.42 0L11.7 6.38l3.75 3.75 2.26-1.92Z"/></svg>',
-  substation:'<svg viewBox="0 0 24 24"><path fill="currentColor" d="M11 2h2l1 4h3l-3 4 2 2h2v2h-3l1 8h-2l-1-8h-2l-1 8H8l1-8H6v-2h2l2-2-3-4h3l1-4Zm1 4-.4 1.5h.8L12 6Zm-1.5 4L9 12h6l-1.5-2h-3Z"/></svg>'
+  substation:'<svg viewBox="0 0 24 24"><path fill="currentColor" d="M11 2h2l1 4h3l-3 4 2 2h2v2h-3l1 8h-2l-1-8h-2l-1 8H8l1-8H6v-2h2l2-2-3-4h3l1-4Zm1 4-.4 1.5h.8L12 6Zm-1.5 4L9 12h6l-1.5-2h-3Z"/></svg>',
+  gear:'<svg viewBox="0 0 24 24"><path fill="currentColor" d="M19.43 12.98c.04-.32.07-.65.07-.98s-.03-.66-.08-.98l2.11-1.65-2-3.46-2.49 1a7.5 7.5 0 0 0-1.7-.98L15 3.27h-4l-.35 2.66c-.61.25-1.18.58-1.7.98l-2.49-1-2 3.46 2.11 1.65c-.05.32-.08.66-.08.98s.03.66.08.98l-2.11 1.65 2 3.46 2.49-1c.52.4 1.09.73 1.7.98L11 20.73h4l.35-2.66c.61-.25 1.18-.58 1.7-.98l2.49 1 2-3.46-2.11-1.65ZM13 17a5 5 0 1 1 0-10 5 5 0 0 1 0 10Zm0-3a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/></svg>',
+  back:'<svg viewBox="0 0 24 24"><path fill="currentColor" d="M15.7 5.3 9 12l6.7 6.7-1.4 1.4L6.2 12l8.1-8.1 1.4 1.4Z"/></svg>'
 };return m[name]||""}
 
-function setTab(tab){if(!["subestaciones","ajustes"].includes(tab))return;currentTab=tab;$$('.section').forEach(e=>e.classList.remove('active'));$("#view"+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active');$$('.navBtn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));$("#pageTitle").textContent=tab==='subestaciones'?'Subestaciones':'Ajustes';renderTopActions();if(tab==='subestaciones')renderStations();else renderSettings()}
-function renderTopActions(){const a=$("#topActions");a.innerHTML="";if(currentTab==='subestaciones'){const folder=document.createElement('button');folder.className='iconBtn';folder.innerHTML=iconSvg('folder');folder.title='Cargar carpeta';folder.onclick=()=>$("#folderPicker").click();const add=document.createElement('button');add.className='iconBtn primary';add.innerHTML=iconSvg('plus');add.title='Nueva subestación';add.onclick=()=>openStationEditor(null,true);a.append(folder,add)}}
+function setTab(tab){if(!["subestaciones","ajustes"].includes(tab))return;currentTab=tab;$$('.section').forEach(e=>e.classList.remove('active'));$("#view"+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active');$("#pageTitle").textContent=tab==='subestaciones'?'Subestaciones':'Ajustes';renderTopActions();if(tab==='subestaciones')renderStations();else renderSettings()}
+function renderTopActions(){const a=$("#topActions");a.innerHTML="";if(currentTab==='subestaciones'){const settings=document.createElement('button');settings.className='iconBtn';settings.innerHTML=iconSvg('gear');settings.title='Ajustes';settings.setAttribute('aria-label','Ajustes');settings.onclick=()=>setTab('ajustes');const folder=document.createElement('button');folder.className='iconBtn';folder.innerHTML=iconSvg('folder');folder.title='Cargar carpeta';folder.setAttribute('aria-label','Cargar carpeta');folder.onclick=()=>$("#folderPicker").click();const add=document.createElement('button');add.className='iconBtn primary';add.innerHTML=iconSvg('plus');add.title='Nueva subestación';add.setAttribute('aria-label','Nueva subestación');add.onclick=()=>openStationEditor(null,true);a.append(settings,folder,add)}else{const back=document.createElement('button');back.className='iconBtn';back.innerHTML=iconSvg('back');back.title='Volver a subestaciones';back.setAttribute('aria-label','Volver a subestaciones');back.onclick=()=>setTab('subestaciones');a.append(back)}}
 
 async function renderStations(){const cont=$("#stationsList");let stations=await getAll(STORE_STATIONS);stations=stations.filter(s=>validCode(String(s.nombre||s.clave||"").toUpperCase()));stations.sort((a,b)=>(a.nombre||"").localeCompare(b.nombre||"",'es'));if(!stations.length){cont.innerHTML='<div class="empty">No hay subestaciones todavía.<br><br>Usa <b>+</b> para crear una válida o el icono de carpeta para importar tus CSV.</div>';return}cont.innerHTML="";for(const s of stations){const btn=document.createElement('button');btn.className='stationCardBtn';btn.type='button';btn.innerHTML='<span class="stationIcon">'+iconSvg('substation')+'</span><span class="stationTitle">'+esc(s.nombre)+'</span><span class="chev">›</span>';btn.onclick=()=>openStation(s.clave);cont.appendChild(btn)}}
 
@@ -308,7 +305,6 @@ async function renderSettings(){const tests=await getAll(STORE_TESTS),stations=(
 async function checkUpdate(){if(!('serviceWorker'in navigator)){toast('Las actualizaciones automáticas no están disponibles.');return}try{if(!swRegistration)swRegistration=await navigator.serviceWorker.getRegistration();if(swRegistration?.waiting){swRegistration.waiting.postMessage({type:'SKIP_WAITING'});return}$("#updateStatus").textContent='Buscando…';$("#btnUpdate").textContent='Buscando';await swRegistration?.update();await new Promise(r=>setTimeout(r,1200));if(swRegistration?.waiting){swUpdateReady=true;$("#updateStatus").textContent='Actualización lista';$("#btnUpdate").textContent='Actualizar';toast('Actualización disponible.')}else{$("#updateStatus").textContent='DC Viewer está actualizado';$("#btnUpdate").textContent='Comprobar';toast('No se encontró una versión nueva.')}}catch{$("#updateStatus").textContent='No se pudo comprobar';$("#btnUpdate").textContent='Reintentar'}}
 async function setupSW(){if(!('serviceWorker'in navigator))return;try{swRegistration=await navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'});swRegistration.addEventListener('updatefound',()=>{const w=swRegistration.installing;if(!w)return;w.addEventListener('statechange',()=>{if(w.state==='installed'&&navigator.serviceWorker.controller){swUpdateReady=true;if(currentTab==='ajustes')renderSettings();toast('Actualización disponible en Ajustes.')}})});navigator.serviceWorker.addEventListener('controllerchange',()=>location.reload())}catch{}}
 
-$$('.navBtn').forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
 $("#folderPicker").onchange=async e=>{const f=[...e.target.files];e.target.value='';if(f.length)await importFiles(f)};
 $("#singleFilePicker").onchange=async e=>{const f=[...e.target.files];e.target.value='';if(!f.length||!pendingImportStationKey)return;const s=await getOne(STORE_STATIONS,pendingImportStationKey);if(s)await importFiles(f,s.nombre);pendingImportStationKey=null;closeSheet('actionSheet')};
 $("#stationAddFab").onclick=()=>openSheet('actionSheet');
