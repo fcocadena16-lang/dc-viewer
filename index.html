@@ -3,1023 +3,276 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#101010">
+<meta name="theme-color" content="#000000">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Descarga baterías">
-<title>Prueba de descarga de banco de baterías</title>
+<meta name="apple-mobile-web-app-title" content="DC Viewer">
+<title>DC Viewer</title>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
 <style>
-:root{color-scheme:dark}*{box-sizing:border-box}
-body{margin:0;padding:max(18px,env(safe-area-inset-top)) 14px max(24px,env(safe-area-inset-bottom));background:#101010;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
-.contenedor{max-width:820px;margin:0 auto}
-.tituloPrincipal{text-align:center;font-size:22px;font-weight:800;letter-spacing:.5px;line-height:1.25;margin:12px 42px 22px}
-.panel,.panelVisor{background:#202020;border:1px solid #2b2b2b;border-radius:14px;padding:14px}
-.cabeceraLista{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
-.cabeceraLista strong{font-size:17px;letter-spacing:.5px}
-
-.accionesCabecera{display:flex;gap:8px}
-.botonIcono svg{width:23px;height:23px}
-.barraBusqueda{display:none;align-items:center;gap:8px;margin:-2px 0 12px}
-.barraBusqueda.visible{display:flex}
-.campoBusqueda{flex:1;min-width:0;height:44px;border:1px solid #505050;border-radius:10px;background:#161616;color:#fff;padding:0 12px;font-size:16px;outline:none}
-.campoBusqueda:focus{border-color:#9a9a9a}
-.limpiarBusqueda{display:none;width:38px;height:38px;border:0;border-radius:9px;background:#3a3a3a;color:#fff;font-size:23px;line-height:1;cursor:pointer}
-.limpiarBusqueda.visible{display:inline-flex;align-items:center;justify-content:center}
-.grupoCarpeta{display:flex;flex-direction:column;gap:7px}
-.carpeta{width:100%;display:flex;align-items:center;gap:11px;text-align:left;background:#292929;border:1px solid #484848;color:#fff;border-radius:10px;padding:11px 12px;cursor:pointer}
-.carpeta:active{transform:scale(.995)}
-.carpetaIcono{width:27px;height:27px;flex:0 0 auto;display:flex;align-items:center;justify-content:center}
-.carpetaIcono svg{width:27px;height:27px}
-.carpetaTexto{flex:1;min-width:0}
-.carpetaNombre{display:block;font-size:16px;font-weight:800;word-break:break-word}
-.carpetaMeta{display:block;color:#aaa;font-size:12px;margin-top:3px}
-.carpetaFlecha{font-size:27px;line-height:1;color:#bbb;transition:transform .16s ease}
-.grupoCarpeta.abierta .carpetaFlecha{transform:rotate(90deg)}
-.contenidoCarpeta{display:none;flex-direction:column;gap:7px;padding-left:17px}
-.grupoCarpeta.abierta .contenidoCarpeta{display:flex}
-.contenidoCarpeta .archivo{background:#262626}
-
-.botonIcono{width:46px;height:46px;border:0;border-radius:11px;background:#eee;color:#111;font-size:27px;line-height:1;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
-.botonIcono:active{transform:scale(.96)}.botonIcono.activo{background:#00c853;color:#07130a}
-.lista{display:flex;flex-direction:column;gap:8px}
-.filaPrueba{display:flex;align-items:center;gap:9px}
-.selectorPrueba{display:none;width:24px;height:24px;accent-color:#00c853;flex:0 0 auto}
-.modoSeleccion .selectorPrueba{display:block}
-.archivo{flex:1;min-width:0;text-align:left;background:#2b2b2b;border:1px solid #444;color:#fff;border-radius:10px;padding:12px;cursor:pointer}
-.archivo.seleccionado{border-color:#00c853;box-shadow:0 0 0 1px #00c853 inset}
-.archivoNombre{font-size:16px;font-weight:750;word-break:break-word}.archivoMeta{color:#aaa;font-size:12px;margin-top:5px}
-.accionesSeleccion{display:none;margin-top:14px;text-align:center}
-.accionesSeleccion.visible{display:block}
-.botonBorrarSeleccion{
-      width:58px;
-      height:54px;
-      border:0;
-      border-radius:10px;
-      background:#ff5252;
-      color:#fff;
-      padding:0;
-      cursor:pointer;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-    }
-.botonBorrarSeleccion:disabled{opacity:.35}
-.vacio{text-align:center;color:#999;padding:22px 6px}input[type=file]{display:none}
-#visor{display:none;position:fixed;inset:0;z-index:1000;overflow-y:auto;background:#101010;padding:max(66px,calc(env(safe-area-inset-top) + 52px)) 8px max(22px,env(safe-area-inset-bottom))}
-#visor.activo{display:block}.visorContenido{position:relative;z-index:1;transition:transform .22s ease;will-change:transform;max-width:1040px;margin:0 auto}
-
-.visorPreview{
-  position:absolute;
-  z-index:2;
-  pointer-events:none;
-  will-change:transform;
-  margin:0;
+:root{
+  color-scheme:dark;
+  --bg:#000;
+  --surface:#1c1c1e;
+  --surface2:#2c2c2e;
+  --surface3:#3a3a3c;
+  --line:#38383a;
+  --text:#f5f5f7;
+  --muted:#a1a1a6;
+  --blue:#0a84ff;
+  --green:#30d158;
+  --red:#ff453a;
+  --orange:#ff9f0a;
+  --radius:18px;
 }
-.visorPreview canvas{pointer-events:none}
-
-.cerrarVisor{position:fixed;top:max(12px,env(safe-area-inset-top));right:14px;z-index:1100;width:46px;height:46px;border:0;border-radius:50%;background:#eee;color:#111;font-size:27px;font-weight:700;line-height:1;cursor:pointer}
-#nombrePrueba{text-align:center;font-size:18px;font-weight:750;word-break:break-word;margin:0 50px 16px}
-.panelVisor{margin-bottom:14px}canvas{display:block;width:100%;height:auto;min-height:360px;background:white;border-radius:10px}
-.estabilidad{display:none;margin-top:12px;padding:10px 12px;border-radius:8px;background:#2b2b2b;text-align:center;font-size:18px;font-weight:bold}
-.resultado{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid #555;padding:9px 0;font-size:18px}.resultado:last-child{border-bottom:0}.valor{font-weight:700;white-space:nowrap}.separador{height:14px}
-.mensaje{display:none;position:fixed;left:50%;bottom:max(22px,env(safe-area-inset-bottom));transform:translateX(-50%);background:#333;color:white;border:1px solid #555;padding:10px 14px;border-radius:9px;z-index:2000;max-width:90%;text-align:center}
-@media(max-width:520px){
-body{padding-left:12px;padding-right:12px}
-.panel{padding:12px}
-.panelVisor{padding:6px}
-.resultado{font-size:17px}
-.tituloPrincipal{font-size:20px}
-#visor{padding-left:4px;padding-right:4px}
-#nombrePrueba{margin-left:54px;margin-right:54px}
-}
-@media(orientation:landscape){
-.visorContenido{max-width:1180px}
-canvas{min-height:430px}
-}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-serif;min-height:100%}
+body{padding-bottom:calc(86px + env(safe-area-inset-bottom))}
+button,input,select,textarea{font:inherit}
+button{color:inherit}
+.hidden{display:none!important}
+.app{max-width:900px;margin:0 auto;padding:calc(14px + env(safe-area-inset-top)) 14px 18px}
+.topbar{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:4px 2px 18px}
+.eyebrow{font-size:13px;color:var(--muted);font-weight:600;letter-spacing:.02em}
+.pageTitle{font-size:32px;line-height:1.05;font-weight:800;letter-spacing:-.7px;margin-top:4px}
+.topActions{display:flex;gap:8px}
+.iconBtn{width:44px;height:44px;border:0;border-radius:50%;background:var(--surface2);display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.iconBtn:active{transform:scale(.96)}
+.iconBtn svg{width:22px;height:22px}
+.iconBtn.primary{background:var(--blue)}
+.section{display:none}.section.active{display:block}
+.card{background:var(--surface);border:1px solid rgba(255,255,255,.05);border-radius:var(--radius);overflow:hidden;box-shadow:0 8px 28px rgba(0,0,0,.18)}
+.card+.card{margin-top:12px}
+.searchWrap{display:none;margin-bottom:12px}.searchWrap.visible{display:flex;gap:8px}
+.searchInput{flex:1;min-width:0;height:44px;border:0;border-radius:13px;background:var(--surface);color:var(--text);padding:0 14px;outline:none;font-size:16px}
+.searchInput:focus{box-shadow:0 0 0 1px var(--blue) inset}
+.smallBtn{border:0;border-radius:12px;padding:0 14px;background:var(--surface2);font-weight:700;min-height:44px}
+.list{display:flex;flex-direction:column;gap:10px}
+.stationGroup{background:var(--surface);border-radius:var(--radius);overflow:hidden;border:1px solid rgba(255,255,255,.05)}
+.stationHeader{width:100%;border:0;background:transparent;text-align:left;padding:16px;display:flex;align-items:center;gap:12px;cursor:pointer}
+.stationIcon{width:38px;height:38px;border-radius:11px;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.stationIcon svg{width:20px;height:20px}
+.stationHeaderText{flex:1;min-width:0}
+.stationName{font-size:17px;font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stationMeta{font-size:13px;color:var(--muted);margin-top:3px}
+.chev{font-size:27px;color:var(--muted);transition:transform .2s}.stationGroup.open .chev{transform:rotate(90deg)}
+.testList{display:none;border-top:1px solid var(--line)}.stationGroup.open .testList{display:block}
+.testRow{display:flex;align-items:center;gap:10px;padding:0 14px;min-height:64px;border-bottom:1px solid var(--line)}.testRow:last-child{border-bottom:0}
+.testButton{flex:1;min-width:0;border:0;background:transparent;text-align:left;padding:12px 0;cursor:pointer}
+.testName{font-size:15px;font-weight:700;word-break:break-word}.testMeta{font-size:12px;color:var(--muted);margin-top:4px}
+.checkDot{display:none;width:26px;height:26px;border-radius:50%;border:2px solid #666;flex:0 0 auto;align-items:center;justify-content:center}
+.selectionMode .checkDot{display:flex}.testRow.selected .checkDot{background:var(--blue);border-color:var(--blue)}.testRow.selected .checkDot::after{content:"✓";font-size:15px;font-weight:800}
+.empty{padding:30px 18px;text-align:center;color:var(--muted);background:var(--surface);border-radius:var(--radius)}
+.navbar{position:fixed;left:50%;bottom:0;transform:translateX(-50%);z-index:700;width:min(900px,100%);height:calc(70px + env(safe-area-inset-bottom));padding:7px 12px calc(7px + env(safe-area-inset-bottom));background:rgba(18,18,18,.88);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-top:1px solid rgba(255,255,255,.09);display:flex;justify-content:space-around}
+.navBtn{flex:1;border:0;background:transparent;color:var(--muted);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:11px;font-weight:600}
+.navBtn svg{width:22px;height:22px}.navBtn.active{color:var(--blue)}
+.selectionBar{position:fixed;z-index:900;left:50%;bottom:calc(80px + env(safe-area-inset-bottom));transform:translate(-50%,20px);opacity:0;pointer-events:none;width:min(360px,calc(100% - 28px));background:rgba(44,44,46,.96);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:9px 10px;display:flex;align-items:center;gap:10px;box-shadow:0 12px 40px rgba(0,0,0,.4);transition:.2s}
+.selectionBar.visible{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.selectionCount{flex:1;padding-left:8px;font-weight:700}.roundAction{width:42px;height:42px;border:0;border-radius:50%;background:var(--surface3);display:flex;align-items:center;justify-content:center}.roundAction.danger{background:var(--red)}
+.stationCardBtn{width:100%;border:0;background:var(--surface);text-align:left;padding:16px;display:flex;gap:12px;align-items:center;border-radius:var(--radius);cursor:pointer}
+.stationCardBtn+.stationCardBtn{margin-top:10px}
+.stationSummary{flex:1;min-width:0}.stationSummary .title{font-size:18px;font-weight:760}.stationSummary .sub{font-size:13px;color:var(--muted);margin-top:5px;line-height:1.35}
+.badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}.badge{display:inline-flex;align-items:center;min-height:24px;border-radius:999px;padding:3px 9px;background:var(--surface2);font-size:11px;font-weight:700;color:#d1d1d6}.badge.blue{background:rgba(10,132,255,.18);color:#66b3ff}.badge.green{background:rgba(48,209,88,.16);color:#6ce48d}.badge.orange{background:rgba(255,159,10,.16);color:#ffc15c}
+.settingsGroup{margin-bottom:16px}.settingsTitle{font-size:13px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin:0 12px 8px}
+.settingsCard{background:var(--surface);border-radius:var(--radius);overflow:hidden}.settingsRow{display:flex;align-items:center;gap:12px;min-height:58px;padding:10px 14px;border-bottom:1px solid var(--line)}.settingsRow:last-child{border-bottom:0}.settingsLabel{flex:1}.settingsLabel strong{display:block;font-size:16px}.settingsLabel small{display:block;color:var(--muted);margin-top:3px}.settingsValue{color:var(--muted);font-size:15px}.linkBtn{border:0;background:transparent;color:var(--blue);font-weight:700;padding:8px 0}
+.overlay{position:fixed;inset:0;z-index:1000;background:var(--bg);display:none;overflow:auto;padding-bottom:calc(28px + env(safe-area-inset-bottom));transform:translateY(0)}
+.overlay.active{display:block}.overlay.animating{transition:transform .22s ease,opacity .22s ease}
+.overlayHeader{position:sticky;top:0;z-index:4;padding:calc(10px + env(safe-area-inset-top)) 12px 10px;background:rgba(0,0,0,.82);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,.05)}
+.backBtn,.headerBtn{height:40px;border:0;border-radius:20px;background:var(--surface2);padding:0 13px;font-weight:700}.backBtn{width:40px;padding:0;font-size:25px;line-height:1}.headerTitle{flex:1;text-align:center;font-size:17px;font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.headerSpacer{width:40px}
+.overlayBody{max-width:900px;margin:0 auto;padding:14px}
+.heroTitle{font-size:28px;font-weight:800;letter-spacing:-.5px;margin:8px 2px 14px}.sectionLabel{font-size:13px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin:20px 10px 8px}
+.infoCard{background:var(--surface);border-radius:var(--radius);padding:16px}.infoGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.infoItem small{display:block;color:var(--muted);font-size:12px;margin-bottom:4px}.infoItem strong{font-size:15px;word-break:break-word}.infoWide{grid-column:1/-1}
+.historyItem{width:100%;border:0;background:var(--surface);border-radius:16px;padding:14px;text-align:left;display:flex;align-items:center;gap:12px;margin-bottom:10px}.historyMain{flex:1;min-width:0}.historyDate{font-size:16px;font-weight:760}.historyMeta{font-size:12px;color:var(--muted);margin-top:5px}
+.fab{position:fixed;z-index:8;right:18px;bottom:calc(22px + env(safe-area-inset-bottom));width:54px;height:54px;border:0;border-radius:50%;background:var(--blue);font-size:31px;box-shadow:0 10px 30px rgba(10,132,255,.35)}
+.recordTop{display:flex;align-items:flex-start;gap:12px}.recordTop .heroTitle{flex:1;margin-top:4px}.recordDate{color:var(--muted);font-size:14px;margin-top:-6px;margin-bottom:12px}
+.actionCard{display:flex;gap:10px;flex-wrap:wrap}.pillBtn{border:0;border-radius:14px;min-height:44px;padding:0 14px;background:var(--surface2);font-weight:750}.pillBtn.primary{background:var(--blue)}
+.chartCard{background:var(--surface);border-radius:var(--radius);padding:8px;overflow:hidden}.chartCard canvas{display:block;width:100%;height:auto;min-height:330px;background:#fff;border-radius:13px}.stability{display:none;margin:10px 8px 4px;padding:10px 12px;border-radius:12px;background:rgba(48,209,88,.14);color:#68e48c;text-align:center;font-weight:800}
+.resultCard{background:var(--surface);border-radius:var(--radius);padding:4px 14px}.resultRow{display:flex;justify-content:space-between;gap:14px;padding:12px 2px;border-bottom:1px solid var(--line);font-size:16px}.resultRow:last-child{border-bottom:0}.resultValue{font-weight:760;white-space:nowrap}
+.subsectionHeader{margin:22px 4px 8px;font-size:20px;font-weight:800;letter-spacing:-.25px}.subsectionHelp{color:var(--muted);font-size:13px;margin:0 4px 10px}
+.readingSummary{background:var(--surface);border-radius:var(--radius);padding:14px}.readingStats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stat{background:var(--surface2);border-radius:13px;padding:10px}.stat small{display:block;color:var(--muted);font-size:11px}.stat strong{display:block;margin-top:3px;font-size:15px}
+details.readingsDetails{margin-top:10px;background:var(--surface);border-radius:var(--radius);overflow:hidden}details.readingsDetails summary{list-style:none;padding:15px;font-weight:750;cursor:pointer}details.readingsDetails summary::-webkit-details-marker{display:none}.readingTable{overflow:auto;border-top:1px solid var(--line)}.readingHead,.readingLine{display:grid;grid-template-columns:58px repeat(4,minmax(70px,1fr));min-width:390px;align-items:center}.readingHead.sealed,.readingLine.sealed{grid-template-columns:58px repeat(2,minmax(100px,1fr));min-width:300px}.readingHead{position:sticky;top:0;background:var(--surface2);font-size:11px;color:var(--muted);font-weight:700}.readingHead div,.readingLine div{padding:9px 7px;border-right:1px solid var(--line)}.readingHead div:last-child,.readingLine div:last-child{border-right:0}.readingLine{border-top:1px solid var(--line);font-size:13px}.readingLine .cellNo{font-weight:760}
+.sheet{position:fixed;inset:0;z-index:1600;display:none;background:rgba(0,0,0,.58);align-items:flex-end}.sheet.active{display:flex}.sheetPanel{width:100%;max-height:92vh;background:var(--surface);border-radius:24px 24px 0 0;overflow:auto;padding-bottom:calc(20px + env(safe-area-inset-bottom));box-shadow:0 -20px 50px rgba(0,0,0,.45)}
+.sheetHandle{width:40px;height:5px;border-radius:99px;background:#666;margin:8px auto 2px}.sheetHeader{position:sticky;top:0;z-index:3;background:rgba(28,28,30,.92);backdrop-filter:blur(18px);display:flex;align-items:center;gap:8px;padding:8px 12px 10px;border-bottom:1px solid var(--line)}.sheetTitle{flex:1;text-align:center;font-size:17px;font-weight:750}.sheetBody{padding:14px}.formSection{margin-bottom:18px}.formTitle{font-size:13px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin:0 8px 8px}.formCard{background:var(--surface2);border-radius:16px;overflow:hidden}.field{display:flex;align-items:center;gap:12px;min-height:54px;padding:8px 12px;border-bottom:1px solid var(--line)}.field:last-child{border-bottom:0}.field label{flex:1;font-size:15px}.field input,.field select,.field textarea{width:52%;min-width:0;border:0;background:#3a3a3c;color:var(--text);border-radius:10px;padding:9px 10px;outline:none}.field textarea{resize:vertical;min-height:70px}.field input:focus,.field select:focus,.field textarea:focus{box-shadow:0 0 0 1px var(--blue) inset}
+.cellsEditor{background:var(--surface2);border-radius:16px;overflow:hidden}.cellHeader,.cellEditRow{display:grid;grid-template-columns:48px repeat(4,minmax(62px,1fr));gap:5px;align-items:center;padding:7px}.cellHeader.sealed,.cellEditRow.sealed{grid-template-columns:48px repeat(2,minmax(90px,1fr))}.cellHeader{position:sticky;top:55px;z-index:2;background:#303033;color:var(--muted);font-size:11px;font-weight:700}.cellEditRow{border-top:1px solid var(--line)}.cellEditRow input{width:100%;min-width:0;background:#3a3a3c;border:0;border-radius:8px;color:var(--text);padding:9px 6px;text-align:center;font-size:13px}.cellN{text-align:center;font-weight:750;font-size:13px}
+.gestureHint{width:120px;height:5px;border-radius:999px;background:#4a4a4c;margin:14px auto 0;opacity:.8}.gestureText{text-align:center;color:var(--muted);font-size:11px;margin-top:6px}
+.toast{position:fixed;z-index:2500;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(12px);opacity:0;pointer-events:none;background:rgba(44,44,46,.96);border:1px solid rgba(255,255,255,.12);border-radius:13px;padding:10px 14px;max-width:88%;text-align:center;transition:.2s;box-shadow:0 12px 35px rgba(0,0,0,.35)}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+input[type=file]{display:none}
+@media(max-width:520px){.pageTitle{font-size:30px}.app{padding-left:12px;padding-right:12px}.infoGrid{grid-template-columns:1fr 1fr}.chartCard canvas{min-height:280px}.overlayBody{padding:12px}.readingStats{grid-template-columns:1fr 1fr 1fr}.field{align-items:flex-start;flex-direction:column;gap:6px}.field input,.field select,.field textarea{width:100%}}
 </style>
 </head>
 <body>
-<main id="pantallaLista" class="contenedor">
-  <div class="tituloPrincipal">PRUEBA DE DESCARGA DE BANCO DE BATERÍAS</div>
-  <section class="panel">
-    <div class="cabeceraLista">
-      <strong>PRUEBAS GUARDADAS</strong>
-      <div class="accionesCabecera">
-        <button id="btnAgregar" class="botonIcono" type="button" aria-label="Cargar pruebas" title="Cargar pruebas">＋</button>
-        <button id="btnBuscar" class="botonIcono" type="button" aria-label="Buscar pruebas" title="Buscar pruebas">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path fill="currentColor" d="M10.5 4a6.5 6.5 0 1 0 3.98 11.64L19.84 21 21 19.84l-5.36-5.36A6.5 6.5 0 0 0 10.5 4Zm0 2a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9Z"/>
-          </svg>
-        </button>
-        <button id="btnEditar" class="botonIcono" type="button" aria-label="Seleccionar pruebas" title="Seleccionar pruebas">✓</button>
+<div class="app" id="appShell">
+  <div class="topbar">
+    <div>
+      <div class="eyebrow" id="eyebrow">Banco de baterías</div>
+      <div class="pageTitle" id="pageTitle">Pruebas</div>
+    </div>
+    <div class="topActions" id="topActions"></div>
+  </div>
+
+  <section id="viewPruebas" class="section active">
+    <div id="searchWrap" class="searchWrap">
+      <input id="searchInput" class="searchInput" type="search" placeholder="Buscar subestación o prueba" autocomplete="off" spellcheck="false">
+      <button id="clearSearch" class="smallBtn" type="button">Limpiar</button>
+    </div>
+    <input id="filePicker" type="file" accept=".csv,text/csv,text/plain" webkitdirectory directory multiple>
+    <div id="testsList" class="list"></div>
+  </section>
+
+  <section id="viewSubestaciones" class="section">
+    <div id="stationsList" class="list"></div>
+  </section>
+
+  <section id="viewAjustes" class="section">
+    <div class="settingsGroup">
+      <div class="settingsTitle">Aplicación</div>
+      <div class="settingsCard">
+        <div class="settingsRow"><div class="settingsLabel"><strong>DC Viewer</strong><small>Visor e historial de bancos de baterías</small></div><div id="versionValue" class="settingsValue">12.0</div></div>
+        <div class="settingsRow"><div class="settingsLabel"><strong>Actualización</strong><small id="updateStatus">Buscar una versión nueva</small></div><button id="btnUpdate" class="linkBtn" type="button">Comprobar</button></div>
       </div>
     </div>
-    <div id="barraBusqueda" class="barraBusqueda">
-      <input id="buscarPrueba" class="campoBusqueda" type="search" placeholder="Buscar por nombre" autocomplete="off" autocapitalize="off" spellcheck="false">
-      <button id="btnLimpiarBusqueda" class="limpiarBusqueda" type="button" aria-label="Limpiar búsqueda" title="Limpiar búsqueda">×</button>
-    </div>
-    <input id="selectorCarpeta" type="file" accept=".csv,text/csv,text/plain" webkitdirectory directory multiple>
-    <div id="lista" class="lista"></div>
-    <div id="accionesSeleccion" class="accionesSeleccion">
-      <button id="btnBorrarSeleccion"
-      class="botonBorrarSeleccion"
-      type="button"
-      disabled
-      aria-label="Eliminar pruebas seleccionadas"
-      title="Eliminar pruebas seleccionadas">
-      <svg viewBox="0 0 24 24" width="27" height="27" aria-hidden="true">
-        <path fill="currentColor"
-          d="M9 3h6l1 2h4v2H4V5h4l1-2Zm-2 6h10l-.8 11H7.8L7 9Zm3 2v7h2v-7h-2Zm4 0v7h2v-7h-2Z"/>
-      </svg>
-    </button>
+    <div class="settingsGroup">
+      <div class="settingsTitle">Almacenamiento</div>
+      <div class="settingsCard">
+        <div class="settingsRow"><div class="settingsLabel"><strong>Pruebas guardadas</strong></div><div id="countTests" class="settingsValue">0</div></div>
+        <div class="settingsRow"><div class="settingsLabel"><strong>Subestaciones</strong></div><div id="countStations" class="settingsValue">0</div></div>
+        <div class="settingsRow"><div class="settingsLabel"><strong>Registros de lecturas</strong></div><div id="countRecords" class="settingsValue">0</div></div>
+      </div>
     </div>
   </section>
-</main>
+</div>
 
-<section id="visor" aria-hidden="true">
-  <button id="btnCerrarVisor" class="cerrarVisor" type="button" aria-label="Cerrar">×</button>
-  <div class="visorContenido">
-    <div id="nombrePrueba"></div>
-    <div class="panelVisor">
-      <canvas id="grafica" width="1200" height="650"></canvas>
-      <div id="estabilidad" class="estabilidad"></div>
-    </div>
-    <div class="panelVisor">
-      <div class="resultado"><span>1 min</span><span id="r1" class="valor">--</span></div>
-      <div class="resultado"><span>10 min</span><span id="r10" class="valor">--</span></div>
-      <div class="resultado"><span>20 min</span><span id="r20" class="valor">--</span></div>
-      <div class="resultado"><span>30 min</span><span id="r30" class="valor">--</span></div>
-      <div class="separador"></div>
-      <div class="resultado"><span>Mínimo</span><span id="rMin" class="valor">--</span></div>
-      <div class="resultado"><span>Tiempo del mínimo</span><span id="rTMin" class="valor">--</span></div>
-      <div class="resultado"><span>Meseta</span><span id="rMeseta" class="valor">--</span></div>
-      <div class="resultado"><span>Tiempo de estabilización</span><span id="rTEstable" class="valor">--</span></div>
-      <div class="resultado"><span>Recuperación</span><span id="rRecuperacion" class="valor">--</span></div>
-    </div>
-  </div>
+<nav id="navbar" class="navbar" aria-label="Navegación principal">
+  <button class="navBtn active" data-tab="pruebas" type="button"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M4 3h16a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm0 2v14h16V5H4Zm2 10h2l2-5 3 7 2-4h3v2h-2l-3 6-3-7-1 3H6v-2Z"/></svg><span>Pruebas</span></button>
+  <button class="navBtn" data-tab="subestaciones" type="button"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M4 3h16v18H4V3Zm2 2v14h4v-4h4v4h4V5H6Zm2 2h2v2H8V7Zm6 0h2v2h-2V7Zm-6 4h2v2H8v-2Zm6 0h2v2h-2v-2Z"/></svg><span>Subestaciones</span></button>
+  <button class="navBtn" data-tab="ajustes" type="button"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M19.43 12.98c.04-.32.07-.65.07-.98s-.03-.66-.08-.98l2.11-1.65-2-3.46-2.49 1a7.5 7.5 0 0 0-1.7-.98L15 3.27h-4l-.35 2.66c-.61.25-1.18.58-1.7.98l-2.49-1-2 3.46 2.11 1.65c-.05.32-.08.66-.08.98s.03.66.08.98l-2.11 1.65 2 3.46 2.49-1c.52.4 1.09.73 1.7.98L11 20.73h4l.35-2.66c.61-.25 1.18-.58 1.7-.98l2.49 1 2-3.46-2.11-1.65ZM13 17a5 5 0 1 1 0-10 5 5 0 0 1 0 10Zm0-3a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/></svg><span>Ajustes</span></button>
+</nav>
+
+<div id="selectionBar" class="selectionBar">
+  <div id="selectionCount" class="selectionCount">0 seleccionadas</div>
+  <button id="exitSelection" class="roundAction" type="button" aria-label="Salir de selección">×</button>
+  <button id="deleteSelection" class="roundAction danger" type="button" aria-label="Eliminar"><svg viewBox="0 0 24 24" width="21" height="21"><path fill="currentColor" d="M9 3h6l1 2h4v2H4V5h4l1-2Zm-2 6h10l-.8 11H7.8L7 9Zm3 2v7h2v-7h-2Zm4 0v7h2v-7h-2Z"/></svg></button>
+</div>
+
+<section id="stationOverlay" class="overlay" aria-hidden="true">
+  <div class="overlayHeader"><button class="backBtn" data-close="stationOverlay" type="button">‹</button><div id="stationOverlayTitle" class="headerTitle">Subestación</div><button id="editStationBtn" class="headerBtn" type="button">Editar</button></div>
+  <div id="stationOverlayBody" class="overlayBody"></div>
+  <button id="addRecordFab" class="fab" type="button" aria-label="Agregar registro">＋</button>
+  <div class="gestureHint"></div><div class="gestureText">Desliza hacia arriba desde abajo para volver</div>
 </section>
-<div id="mensaje" class="mensaje"></div>
+
+<section id="recordOverlay" class="overlay" aria-hidden="true">
+  <div class="overlayHeader"><button class="backBtn" data-close="recordOverlay" type="button">‹</button><div id="recordOverlayTitle" class="headerTitle">Registro</div><div class="headerSpacer"></div></div>
+  <div id="recordOverlayBody" class="overlayBody"></div>
+  <div class="gestureHint"></div><div class="gestureText">Desliza hacia arriba desde abajo para volver</div>
+</section>
+
+<div id="stationSheet" class="sheet" aria-hidden="true">
+  <div class="sheetPanel"><div class="sheetHandle"></div><div class="sheetHeader"><button class="headerBtn" data-sheet-close="stationSheet" type="button">Cancelar</button><div class="sheetTitle">Datos de la subestación</div><button id="saveStationBtn" class="headerBtn" type="button">Guardar</button></div><div id="stationForm" class="sheetBody"></div></div>
+</div>
+
+<div id="readingsSheet" class="sheet" aria-hidden="true">
+  <div class="sheetPanel"><div class="sheetHandle"></div><div class="sheetHeader"><button class="headerBtn" data-sheet-close="readingsSheet" type="button">Cancelar</button><div class="sheetTitle">Lecturas del banco</div><button id="saveReadingsBtn" class="headerBtn" type="button">Guardar</button></div><div id="readingsForm" class="sheetBody"></div></div>
+</div>
+
+<div id="toast" class="toast"></div>
 
 <script>
 "use strict";
-const DB_NAME="Visor130VDB", DB_VERSION=1, STORE="pruebas";
-let db=null, pruebaActual=null, puntosActuales=[], modoSeleccion=false, seleccionadas=new Set(), ordenPruebas=[], indicePruebaActual=-1, textoBusqueda="", busquedaVisible=false; const carpetasAbiertas=new Set();
+const APP_VERSION="12.0";
+const DB_NAME="Visor130VDB", DB_VERSION=2;
+const STORE_TESTS="pruebas", STORE_STATIONS="subestaciones", STORE_RECORDS="registros";
+let db=null,currentTab="pruebas",searchText="",searchVisible=false;
+let selectionMode=false,selectedTests=new Set(),openGroups=new Set();
+let currentStationKey=null,currentRecordDate=null,currentRecordTestId=null;
+let editingStationKey=null,editingNewStation=false,editingReadingsKey=null;
+let swRegistration=null,swUpdateReady=false;
 
-function msg(t,ms=1600){const e=document.getElementById("mensaje");e.textContent=t;e.style.display="block";clearTimeout(msg.timer);msg.timer=setTimeout(()=>{e.style.display="none";e.textContent=""},ms)}
-function abrirDB(){return new Promise((ok,no)=>{const r=indexedDB.open(DB_NAME,DB_VERSION);r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains(STORE)){const s=d.createObjectStore(STORE,{keyPath:"id",autoIncrement:true});s.createIndex("nombre","nombre",{unique:false});s.createIndex("importado","importado",{unique:false})}};r.onsuccess=()=>{db=r.result;ok(db)};r.onerror=()=>no(r.error)})}
-function st(m="readonly"){return db.transaction(STORE,m).objectStore(STORE)}
-function guardar(x){return new Promise((ok,no)=>{const r=st("readwrite").add(x);r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)})}
-function todos(){return new Promise((ok,no)=>{const r=st().getAll();r.onsuccess=()=>ok(r.result||[]);r.onerror=()=>no(r.error)})}
-function uno(id){return new Promise((ok,no)=>{const r=st().get(Number(id));r.onsuccess=()=>ok(r.result||null);r.onerror=()=>no(r.error)})}
-function borrar(id){return new Promise((ok,no)=>{const r=st("readwrite").delete(Number(id));r.onsuccess=()=>ok();r.onerror=()=>no(r.error)})}
-async function hash(texto){const b=new TextEncoder().encode(texto),d=await crypto.subtle.digest("SHA-256",b);return Array.from(new Uint8Array(d)).map(x=>x.toString(16).padStart(2,"0")).join("")}
-const norm=n=>String(n||"").trim().toLowerCase();
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s??"").replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));
+const norm=s=>String(s||"").trim().toLowerCase();
+function toast(t,ms=1900){const e=$("#toast");e.textContent=t;e.classList.add("show");clearTimeout(toast.timer);toast.timer=setTimeout(()=>e.classList.remove("show"),ms)}
+function todayISO(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function fechaBonita(f){if(!f)return"Sin fecha";const p=f.split("-");if(p.length!==3)return f;return new Intl.DateTimeFormat("es-MX",{day:"2-digit",month:"short",year:"numeric"}).format(new Date(Number(p[0]),Number(p[1])-1,Number(p[2]))).replace(".","")}
+function infoArchivo(nombre){const limpio=String(nombre||"").trim(),sinExt=limpio.replace(/\.csv$/i,"");const m=sinExt.match(/^(.*)_(\d{4}-\d{2}-\d{2})(?:_(\d+))?$/);return m?{subestacion:m[1],fecha:m[2],repeticion:m[3]?Number(m[3]):1}:{subestacion:sinExt,fecha:"",repeticion:1}}
+function stationKey(name){return norm(infoArchivo(name).subestacion)}
+function csvPuntos(texto){const r=[];for(const raw of String(texto||"").replace(/^\uFEFF/,"").split(/\r?\n/)){const l=raw.trim();if(!l)continue;const p=l.split(",");if(p.length<2)continue;const t=parseFloat(p[0]),v=parseFloat(p[1]);if(Number.isFinite(t)&&Number.isFinite(v))r.push([t,v])}return r}
+async function hash(texto){const b=new TextEncoder().encode(texto),d=await crypto.subtle.digest("SHA-256",b);return [...new Uint8Array(d)].map(x=>x.toString(16).padStart(2,"0")).join("")}
 
+function openDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open(DB_NAME,DB_VERSION);r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains(STORE_TESTS)){const s=d.createObjectStore(STORE_TESTS,{keyPath:"id",autoIncrement:true});s.createIndex("nombre","nombre",{unique:false});s.createIndex("importado","importado",{unique:false})}if(!d.objectStoreNames.contains(STORE_STATIONS))d.createObjectStore(STORE_STATIONS,{keyPath:"clave"});if(!d.objectStoreNames.contains(STORE_RECORDS))d.createObjectStore(STORE_RECORDS,{keyPath:"id"})};r.onsuccess=()=>{db=r.result;resolve(db)};r.onerror=()=>reject(r.error)})}
+function store(name,mode="readonly"){return db.transaction(name,mode).objectStore(name)}
+function getAll(name){return new Promise((ok,no)=>{const r=store(name).getAll();r.onsuccess=()=>ok(r.result||[]);r.onerror=()=>no(r.error)})}
+function getOne(name,key){return new Promise((ok,no)=>{const r=store(name).get(key);r.onsuccess=()=>ok(r.result||null);r.onerror=()=>no(r.error)})}
+function putOne(name,obj){return new Promise((ok,no)=>{const r=store(name,"readwrite").put(obj);r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)})}
+function addOne(name,obj){return new Promise((ok,no)=>{const r=store(name,"readwrite").add(obj);r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)})}
+function delOne(name,key){return new Promise((ok,no)=>{const r=store(name,"readwrite").delete(key);r.onsuccess=()=>ok();r.onerror=()=>no(r.error)})}
+function defaultStation(nombre){return{clave:norm(nombre),nombre:String(nombre||"").trim(),banco:{marca:"",tipo:"",capacidad:"",anio:"",numCeldas:60,sellada:false},cargador:{marca:"",modelo:"",capacidad:"",serie:""},creado:Date.now(),actualizado:Date.now()}}
+async function ensureStation(nombre){const clave=norm(nombre);if(!clave)return null;let s=await getOne(STORE_STATIONS,clave);if(!s){s=defaultStation(nombre);await putOne(STORE_STATIONS,s)}return s}
+async function syncStations(){const tests=await getAll(STORE_TESTS);for(const t of tests){const i=infoArchivo(t.nombre);if(i.subestacion)await ensureStation(i.subestacion)}}
+function recordId(clave,fecha){return clave+"|"+fecha}
 
-function infoArchivo(nombre){
-  const limpio=String(nombre||"").trim();
-  const sinExt=limpio.replace(/\.csv$/i,"");
-  const m=sinExt.match(/^(.*)_(\d{4}-\d{2}-\d{2})(?:_(\d+))?$/);
-
-  if(m){
-    return{
-      subestacion:m[1],
-      fecha:m[2],
-      repeticion:m[3]?Number(m[3]):1
-    };
-  }
-
-  return{
-    subestacion:sinExt,
-    fecha:"",
-    repeticion:1
-  };
-}
-
-function claveSubestacion(nombre){
-  return norm(infoArchivo(nombre).subestacion);
-}
-
-function coincideBusqueda(p,q){
-  if(!q)return true;
-  const info=infoArchivo(p.nombre);
-  const texto=(p.nombre+" "+info.subestacion).toLowerCase();
-  return texto.includes(q);
-}
-
-function csvPuntos(texto){
-  const lineas=texto.replace(/^\uFEFF/,"").split(/\r?\n/),r=[];
-  for(const raw of lineas){const l=raw.trim();if(!l)continue;const p=l.split(",");if(p.length<2)continue;const t=parseFloat(p[0]),v=parseFloat(p[1]);if(Number.isFinite(t)&&Number.isFinite(v))r.push([t,v])}
-  return r;
-}
+function fv(v){return v===null||v===undefined||v===""||!Number.isFinite(Number(v))?"--":Number(v).toFixed(2)+" V"}
+function ft(s){if(s===null||s===undefined||!Number.isFinite(Number(s)))return"--";const n=Math.max(0,Math.round(Number(s)));return Math.floor(n/60)+":"+String(n%60).padStart(2,"0")+" min"}
 function valorSegundo(d,s){for(const p of d)if(Number(p[0])===s)return p[1];return null}
 function regresion(d,a,b){const n=b-a+1;if(n<2)return null;let sx=0,sy=0,sxy=0,sxx=0,x0=d[a][0];for(let i=a;i<=b;i++){const x=d[i][0]-x0,y=d[i][1];sx+=x;sy+=y;sxy+=x*y;sxx+=x*x}const den=n*sxx-sx*sx;if(Math.abs(den)<1e-6)return null;const m=(n*sxy-sx*sy)/den,c=(sy-m*sx)/n,xf=d[b][0]-x0;return{pendiente:m,valor:c+m*xf}}
-function estabilidad(d){
-  const V=60,R=1.0,U=.15,S=120;if(d.length<V)return{confirmada:false,voltaje:null,tiempo:null};
-  const ps=new Array(d.length).fill(null),vs=new Array(d.length).fill(null);
-  for(let i=V-1;i<d.length;i++){const g=regresion(d,i-V+1,i);if(g){ps[i]=g.pendiente*60;vs[i]=g.valor}}
-  let min=d[0][1],imin=0,rec=false,c=0;
-  for(let i=1;i<d.length;i++){
-    if(d[i][1]<min){min=d[i][1];imin=i;rec=false;c=0}
-    if(i<=imin)continue;
-    if(!rec){if(d[i][1]-min>=R)rec=true;else continue}
-    if(ps[i]!==null&&Math.abs(ps[i])<=U){c++;if(c>=S)return{confirmada:true,voltaje:vs[i]!==null?vs[i]:d[i][1],tiempo:d[i][0]}}else c=0;
-  }
-  return{confirmada:false,voltaje:null,tiempo:null}
-}
-function analizar(d){
-  if(!d.length)return{};
-  let min=Number(d[0][1]),tmin=Number(d[0][0]);for(let i=1;i<d.length;i++){const v=Number(d[i][1]);if(Number.isFinite(v)&&v<min){min=v;tmin=Number(d[i][0])}}
-  const e=estabilidad(d),meseta=e.confirmada?Number(e.voltaje):null,te=e.confirmada?Number(e.tiempo):null,rec=e.confirmada&&Number.isFinite(meseta)?meseta-min:null;
-  return{minimo:min,tiempoMinimo:tmin,meseta,tiempoEstabilizacion:te,recuperacion:rec,estabilizada:e.confirmada}
-}
-const fv=v=>v===null||!Number.isFinite(Number(v))?"--":Number(v).toFixed(2)+" V";
-function ft(s){if(s===null||!Number.isFinite(Number(s)))return"--";const n=Math.max(0,Math.round(Number(s)));return Math.floor(n/60)+":"+String(n%60).padStart(2,"0")+" min"}
-function dibujarEnCanvas(c,d){
-  const x=c.getContext("2d"),W=c.width,H=c.height,L=66,R=18,T=20,B=50,aw=W-L-R,ah=H-T-B;
-  const TMAX=Math.max(1800,d.length?Math.ceil(d[d.length-1][0]/300)*300:1800);let vmin=117,vmax=132;
-  if(d.length){let mi=d[0][1],ma=d[0][1];for(let i=1;i<d.length;i++){mi=Math.min(mi,d[i][1]);ma=Math.max(ma,d[i][1])}if(mi<117)vmin=Math.floor(mi/5)*5;if(ma>132)vmax=Math.ceil(ma/5)*5}
-  if(vmax-vmin<10)vmin=vmax-10;x.clearRect(0,0,W,H);x.fillStyle="white";x.fillRect(0,0,W,H);x.font="14px Arial";
-  const rango=vmax-vmin;let pv=1;if(rango>20&&rango<=30)pv=2;if(rango>30)pv=5;const primero=Math.ceil(vmin/pv)*pv;
-  for(let v=primero;v<=vmax+.001;v+=pv){const y=T+((vmax-v)/(vmax-vmin))*ah;x.strokeStyle="#ddd";x.lineWidth=1;x.beginPath();x.moveTo(L,y);x.lineTo(L+aw,y);x.stroke();x.fillStyle="black";x.textAlign="right";x.fillText(v.toFixed(0)+" V",L-6,y+5)}
-  const mm=Math.ceil(TMAX/60),pm=mm<=30?5:(mm<=60?10:15);
-  for(let m=0;m<=mm;m+=pm){const s=m*60,xx=L+(s/TMAX)*aw;x.strokeStyle="#ddd";x.beginPath();x.moveTo(xx,T);x.lineTo(xx,T+ah);x.stroke();x.fillStyle="black";x.textAlign="center";x.fillText(m+"m",xx,H-18)}
-  x.strokeStyle="black";x.lineWidth=2;x.beginPath();x.moveTo(L,T);x.lineTo(L,T+ah);x.lineTo(L+aw,T+ah);x.stroke();
-  if(!d.length)return;const X=s=>L+(s/TMAX)*aw,Y=v=>T+((vmax-v)/(vmax-vmin))*ah;x.lineWidth=1.5;
-  for(let i=1;i<d.length;i++){const [t1,v1]=d[i-1],[t2,v2]=d[i];x.strokeStyle=((v1+v2)/2<=110)?"red":"blue";x.beginPath();x.moveTo(X(t1),Y(v1));x.lineTo(X(t2),Y(v2));x.stroke()}
-}
-function dibujar(d){dibujarEnCanvas(document.getElementById("grafica"),d)}
-
-
-async function importar(files){
-  const csv=[...files].filter(f=>f.name.toLowerCase().endsWith(".csv"));
-  if(!csv.length){msg("La carpeta no contiene archivos CSV.");return}
-  const e=await todos(), nombres=new Set(e.map(p=>norm(p.nombre))), hashes=new Set();
-  for(const p of e){try{hashes.add(p.hash||await hash(p.contenido||""))}catch{}}
-  let a=0,d=0,i=0;
-  for(const f of csv){
-    try{
-      const texto=await f.text(),p=csvPuntos(texto);if(!p.length){i++;continue}
-      const n=norm(f.name),h=await hash(texto);
-      if(nombres.has(n)||hashes.has(h)){d++;continue}
-      await guardar({nombre:f.name,contenido:texto,hash:h,importado:Date.now(),muestras:p.length,duracion:p[p.length-1][0]});
-      nombres.add(n);hashes.add(h);a++;
-    }catch{i++}
-  }
-  cacheAdyacentes.clear();
-  await lista();
-  let t=`${a} ${a===1?"prueba agregada":"pruebas agregadas"}`;if(d)t+=` · ${d} duplicada${d===1?"":"s"} omitida${d===1?"":"s"}`;if(i)t+=` · ${i} inválida${i===1?"":"s"}`;msg(t)
-}
-
-async function lista(){
-  const cont=document.getElementById("lista");
-  const todas=await todos();
-
-  todas.sort((a,b)=>b.importado-a.importado);
-
-  // Limpiar selecciones de archivos que ya no existen.
-  const idsExistentes=new Set(todas.map(p=>Number(p.id)));
-  for(const id of [...seleccionadas]){
-    if(!idsExistentes.has(Number(id)))seleccionadas.delete(Number(id));
-  }
-
-  const q=textoBusqueda.trim().toLowerCase();
-
-  // Si la búsqueda coincide con el nombre de la subestación, se muestran
-  // todas sus pruebas. Si coincide con un archivo concreto, se muestra ese archivo.
-  const estacionesQueCoinciden=new Set();
-  if(q){
-    for(const p of todas){
-      const sub=infoArchivo(p.nombre).subestacion.toLowerCase();
-      if(sub.includes(q))estacionesQueCoinciden.add(claveSubestacion(p.nombre));
-    }
-  }
-
-  const ps=todas.filter(p=>{
-    if(!q)return true;
-    const k=claveSubestacion(p.nombre);
-    return estacionesQueCoinciden.has(k) || coincideBusqueda(p,q);
-  });
-
-  cont.innerHTML="";
-
-  if(!ps.length){
-    cont.innerHTML='<div class="vacio">'+(q?"No se encontraron pruebas.":"No hay pruebas guardadas.")+'</div>';
-    cont.classList.toggle("modoSeleccion",modoSeleccion);
-    actualizarAccionesSeleccion();
-    return;
-  }
-
-  // Agrupar por subestación.
-  const grupos=new Map();
-
-  for(const p of ps){
-    const info=infoArchivo(p.nombre);
-    const clave=norm(info.subestacion);
-
-    if(!grupos.has(clave)){
-      grupos.set(clave,{
-        clave,
-        nombre:info.subestacion,
-        pruebas:[]
-      });
-    }
-
-    grupos.get(clave).pruebas.push(p);
-  }
-
-  // Orden de los grupos: por la prueba más reciente de cada grupo.
-  const ordenGrupos=[...grupos.values()].sort((a,b)=>{
-    const aa=Math.max(...a.pruebas.map(p=>Number(p.importado)||0));
-    const bb=Math.max(...b.pruebas.map(p=>Number(p.importado)||0));
-    return bb-aa;
-  });
-
-  // El carrusel seguirá el mismo orden visual: grupo por grupo,
-  // y dentro de cada carpeta de la más reciente a la más antigua.
-  ordenPruebas=[];
-
-  const crearFilaPrueba=(p)=>{
-    const f=document.createElement("div");
-    f.className="filaPrueba";
-
-    const cb=document.createElement("input");
-    cb.type="checkbox";
-    cb.className="selectorPrueba";
-    cb.checked=seleccionadas.has(Number(p.id));
-    cb.setAttribute("aria-label","Seleccionar "+p.nombre);
-
-    const b=document.createElement("button");
-    b.className="archivo"+(cb.checked?" seleccionado":"");
-    b.type="button";
-    b.innerHTML='<div class="archivoNombre"></div><div class="archivoMeta"></div>';
-    b.querySelector(".archivoNombre").textContent=p.nombre;
-    b.querySelector(".archivoMeta").textContent=ft(p.duracion);
-
-    const cambiar=()=>{
-      const id=Number(p.id);
-
-      if(seleccionadas.has(id)){
-        seleccionadas.delete(id);
-      }else{
-        seleccionadas.add(id);
-      }
-
-      cb.checked=seleccionadas.has(id);
-      b.classList.toggle("seleccionado",cb.checked);
-      actualizarAccionesSeleccion();
-    };
-
-    cb.onchange=()=>{
-      const id=Number(p.id);
-
-      if(cb.checked){
-        seleccionadas.add(id);
-      }else{
-        seleccionadas.delete(id);
-      }
-
-      b.classList.toggle("seleccionado",cb.checked);
-      actualizarAccionesSeleccion();
-    };
-
-    b.onclick=()=>{
-      if(modoSeleccion){
-        cambiar();
-      }else{
-        cerrarBusquedaAlAbrir();
-        abrir(p.id);
-      }
-    };
-
-    f.append(cb,b);
-    return f;
-  };
-
-  for(const grupo of ordenGrupos){
-    grupo.pruebas.sort((a,b)=>b.importado-a.importado);
-
-    for(const p of grupo.pruebas){
-      ordenPruebas.push(Number(p.id));
-    }
-
-    // Solo crear carpeta cuando existen 2 o más archivos de la misma subestación.
-    if(grupo.pruebas.length>=2){
-      const caja=document.createElement("div");
-      caja.className="grupoCarpeta";
-
-      // Durante una búsqueda la carpeta se abre automáticamente.
-      const abierta=q || carpetasAbiertas.has(grupo.clave);
-      caja.classList.toggle("abierta",abierta);
-
-      const carpeta=document.createElement("button");
-      carpeta.type="button";
-      carpeta.className="carpeta";
-      carpeta.innerHTML=`
-        <span class="carpetaIcono" aria-hidden="true">
-          <svg viewBox="0 0 24 24">
-            <path fill="currentColor" d="M3 6.5A2.5 2.5 0 0 1 5.5 4H10l2 2h6.5A2.5 2.5 0 0 1 21 8.5v8A2.5 2.5 0 0 1 18.5 19h-13A2.5 2.5 0 0 1 3 16.5v-10Z"/>
-          </svg>
-        </span>
-        <span class="carpetaTexto">
-          <span class="carpetaNombre"></span>
-          <span class="carpetaMeta"></span>
-        </span>
-        <span class="carpetaFlecha" aria-hidden="true">›</span>`;
-
-      carpeta.querySelector(".carpetaNombre").textContent=grupo.nombre;
-      carpeta.querySelector(".carpetaMeta").textContent=
-        grupo.pruebas.length+" "+(grupo.pruebas.length===1?"prueba":"pruebas");
-
-      const contenido=document.createElement("div");
-      contenido.className="contenidoCarpeta";
-
-      for(const p of grupo.pruebas){
-        contenido.appendChild(crearFilaPrueba(p));
-      }
-
-      carpeta.onclick=()=>{
-        const ahoraAbierta=!caja.classList.contains("abierta");
-        caja.classList.toggle("abierta",ahoraAbierta);
-
-        if(ahoraAbierta){
-          carpetasAbiertas.add(grupo.clave);
-        }else{
-          carpetasAbiertas.delete(grupo.clave);
-        }
-      };
-
-      caja.append(carpeta,contenido);
-      cont.appendChild(caja);
-    }else{
-      cont.appendChild(crearFilaPrueba(grupo.pruebas[0]));
-    }
-  }
-
-  cont.classList.toggle("modoSeleccion",modoSeleccion);
-  actualizarAccionesSeleccion();
-}
-
-function actualizarAccionesSeleccion(){
-  const acciones =
-    document.getElementById("accionesSeleccion");
-
-  const btn =
-    document.getElementById("btnBorrarSeleccion");
-
-  const haySeleccion =
-    modoSeleccion &&
-    seleccionadas.size > 0;
-
-  acciones.classList.toggle(
-    "visible",
-    haySeleccion
-  );
-
-  btn.disabled =
-    !haySeleccion;
-}
-
-async function borrarSeleccionadas(){
-  if (
-    seleccionadas.size === 0
-  ) {
-    return;
-  }
-
-  const n =
-    seleccionadas.size;
-
-  if (
-    !confirm(
-      "¿Eliminar " +
-      n +
-      " " +
-      (
-        n === 1
-        ?
-        "prueba seleccionada"
-        :
-        "pruebas seleccionadas"
-      ) +
-      " del visor?"
-    )
-  ) {
-    return;
-  }
-
-  for (
-    const id of
-    [...seleccionadas]
-  ) {
-    await borrar(
-      id
-    );
-  }
-
-  // Limpiar completamente el modo de selección.
-  seleccionadas.clear();
-  modoSeleccion = false;
-
-  document.getElementById(
-    "btnEditar"
-  ).classList.remove(
-    "activo"
-  );
-
-  document.getElementById(
-    "lista"
-  ).classList.remove(
-    "modoSeleccion"
-  );
-
-  document.getElementById(
-    "accionesSeleccion"
-  ).classList.remove(
-    "visible"
-  );
-
-  cacheAdyacentes.clear();
-  await lista();
-
-  // No dejar mensaje abajo después de borrar.
-  const aviso =
-    document.getElementById(
-      "mensaje"
-    );
-
-  aviso.style.display =
-    "none";
-
-  aviso.textContent =
-    "";
-}
-
-async function abrir(id){
-  const p=await uno(id);if(!p)return;const d=csvPuntos(p.contenido);if(!d.length){msg("El CSV no contiene datos válidos.");return}
-  pruebaActual=p;
-  puntosActuales=d;
-  indicePruebaActual=ordenPruebas.indexOf(Number(p.id));
-  const contenidoActual = document.querySelector("#visor .visorContenido");
-  if(contenidoActual && !gestoHorizontal){
-    contenidoActual.style.transform = "translateX(0)";
-    contenidoActual.style.opacity = "1";
-  }
-  document.getElementById("nombrePrueba").textContent=p.nombre;
-  const v=document.getElementById("visor");v.classList.add("activo");v.setAttribute("aria-hidden","false");document.body.style.overflow="hidden";v.scrollTop=0;dibujar(d);
-  const a=analizar(d);document.getElementById("rMin").textContent=fv(a.minimo);document.getElementById("rTMin").textContent=ft(a.tiempoMinimo);
-  document.getElementById("rMeseta").textContent=fv(a.meseta);document.getElementById("rTEstable").textContent=ft(a.tiempoEstabilizacion);
-  document.getElementById("rRecuperacion").textContent=a.recuperacion===null?"--":(a.recuperacion>=0?"+":"")+Number(a.recuperacion).toFixed(2)+" V";
-  document.getElementById("r1").textContent=fv(valorSegundo(d,60));document.getElementById("r10").textContent=fv(valorSegundo(d,600));
-  document.getElementById("r20").textContent=fv(valorSegundo(d,1200));document.getElementById("r30").textContent=fv(valorSegundo(d,1800));
-  const est=document.getElementById("estabilidad");if(a.estabilizada){est.style.display="block";est.textContent="ESTABILIZADO — "+Number(a.meseta).toFixed(2)+" V"}else{est.style.display="none";est.textContent=""}
-  precargarAdyacentes();
-}
-function cerrar(){quitarPreview();const v=document.getElementById("visor");v.classList.remove("activo");v.setAttribute("aria-hidden","true");document.body.style.overflow="";pruebaActual=null;puntosActuales=[];indicePruebaActual=-1;lista();}
-
-function navegarPrueba(direccion){
-  if(!pruebaActual || indicePruebaActual < 0 || ordenPruebas.length === 0)return;
-
-  const nuevoIndice = indicePruebaActual + direccion;
-
-  if(nuevoIndice < 0 || nuevoIndice >= ordenPruebas.length)return;
-
-  abrir(ordenPruebas[nuevoIndice]);
-}
-
-let toqueInicioX = null;
-let toqueInicioY = null;
-let toqueInicioTiempo = 0;
-let gestoHorizontal = false;
-let desplazamientoActual = 0;
-let previewEl = null;
-let previewDireccion = 0;
-let previewToken = 0;
-const cacheAdyacentes = new Map();
-
-function contenidoVisor(){
-  return document.querySelector("#visor .visorContenido");
-}
-
-
-function quitarPreview(){
-  previewToken++;
-  if(previewEl){
-    previewEl.remove();
-    previewEl=null;
-  }
-  previewDireccion=0;
-}
-
-async function obtenerPruebaPorIndice(indice){
-  if(indice < 0 || indice >= ordenPruebas.length)return null;
-  const id=ordenPruebas[indice];
-  if(cacheAdyacentes.has(id))return cacheAdyacentes.get(id);
-  const p=await uno(id);
-  if(!p)return null;
-  const d=csvPuntos(p.contenido||"");
-  if(!d.length)return null;
-  const dato={p,d};
-  cacheAdyacentes.set(id,dato);
-  return dato;
-}
-
-async function precargarAdyacentes(){
-  if(indicePruebaActual < 0)return;
-  const indices=[indicePruebaActual-1,indicePruebaActual+1];
-  for(const idx of indices){
-    if(idx<0 || idx>=ordenPruebas.length)continue;
-    obtenerPruebaPorIndice(idx).catch(()=>{});
-  }
-}
-
-function llenarPreview(el,p,d){
-  const a=analizar(d);
-  el.querySelector(".previewNombre").textContent=p.nombre;
-
-  const valores=[
-    ["r1",fv(valorSegundo(d,60))],
-    ["r10",fv(valorSegundo(d,600))],
-    ["r20",fv(valorSegundo(d,1200))],
-    ["r30",fv(valorSegundo(d,1800))],
-    ["rMin",fv(a.minimo)],
-    ["rTMin",ft(a.tiempoMinimo)],
-    ["rMeseta",fv(a.meseta)],
-    ["rTEstable",ft(a.tiempoEstabilizacion)],
-    ["rRecuperacion",a.recuperacion===null?"--":(a.recuperacion>=0?"+":"")+Number(a.recuperacion).toFixed(2)+" V"]
-  ];
-
-  for(const [k,v] of valores){
-    const n=el.querySelector('[data-r="'+k+'"]');
-    if(n)n.textContent=v;
-  }
-
-  const est=el.querySelector(".previewEstabilidad");
-  if(a.estabilizada){
-    est.style.display="block";
-    est.textContent="ESTABILIZADO — "+Number(a.meseta).toFixed(2)+" V";
-  }else{
-    est.style.display="none";
-    est.textContent="";
-  }
-
-  dibujarEnCanvas(el.querySelector("canvas"),d);
-}
-
-function crearElementoPreview(p,d){
-  const actual=contenidoVisor();
-  const visor=document.getElementById("visor");
-  const el=document.createElement("div");
-  el.className="visorPreview";
-
-  el.innerHTML=`
-    <div class="previewNombre" style="text-align:center;font-size:18px;font-weight:750;word-break:break-word;margin:0 50px 16px"></div>
-    <div class="panelVisor">
-      <canvas width="1200" height="650"></canvas>
-      <div class="estabilidad previewEstabilidad"></div>
-    </div>
-    <div class="panelVisor">
-      <div class="resultado"><span>1 min</span><span data-r="r1" class="valor">--</span></div>
-      <div class="resultado"><span>10 min</span><span data-r="r10" class="valor">--</span></div>
-      <div class="resultado"><span>20 min</span><span data-r="r20" class="valor">--</span></div>
-      <div class="resultado"><span>30 min</span><span data-r="r30" class="valor">--</span></div>
-      <div class="separador"></div>
-      <div class="resultado"><span>Mínimo</span><span data-r="rMin" class="valor">--</span></div>
-      <div class="resultado"><span>Tiempo del mínimo</span><span data-r="rTMin" class="valor">--</span></div>
-      <div class="resultado"><span>Meseta</span><span data-r="rMeseta" class="valor">--</span></div>
-      <div class="resultado"><span>Tiempo de estabilización</span><span data-r="rTEstable" class="valor">--</span></div>
-      <div class="resultado"><span>Recuperación</span><span data-r="rRecuperacion" class="valor">--</span></div>
-    </div>`;
-
-  el.style.top=actual.offsetTop+"px";
-  el.style.left=actual.offsetLeft+"px";
-  el.style.width=actual.offsetWidth+"px";
-
-  visor.appendChild(el);
-  llenarPreview(el,p,d);
-  return el;
-}
-
-function anchoCarrusel(){
-  return Math.max(document.getElementById("visor").clientWidth,window.innerWidth,320);
-}
-
-function posicionarPaginas(dx){
-  const actual=contenidoVisor();
-  if(actual){
-    actual.style.transform="translateX("+dx+"px)";
-    actual.style.opacity="1";
-  }
-
-  if(previewEl){
-    const w=anchoCarrusel();
-    const base=previewDireccion>0?w:-w;
-    previewEl.style.transform="translateX("+(base+dx)+"px)";
-    previewEl.style.opacity="1";
-  }
-}
-
-async function asegurarPreview(direccion){
-  if(direccion!==1 && direccion!==-1)return null;
-
-  const nuevoIndice=indicePruebaActual+direccion;
-  if(nuevoIndice<0 || nuevoIndice>=ordenPruebas.length){
-    quitarPreview();
-    return null;
-  }
-
-  if(previewEl && previewDireccion===direccion){
-    return previewEl;
-  }
-
-  const token=++previewToken;
-
-  if(previewEl){
-    previewEl.remove();
-    previewEl=null;
-  }
-
-  previewDireccion=direccion;
-
-  const dato=await obtenerPruebaPorIndice(nuevoIndice);
-  if(token!==previewToken || !dato)return null;
-
-  previewEl=crearElementoPreview(dato.p,dato.d);
-
-  const w=anchoCarrusel();
-  previewEl.style.transition="none";
-  previewEl.style.transform="translateX("+(direccion>0?w:-w)+"px)";
-
-  posicionarPaginas(desplazamientoActual);
-  return previewEl;
-}
-
-async function finalizarCambioCarrusel(direccion){
-  const actual=contenidoVisor();
-  const p=await asegurarPreview(direccion);
-
-  if(!actual || !p){
-    if(actual){
-      actual.style.transition="transform .20s ease";
-      actual.style.transform="translateX(0)";
-    }
-    quitarPreview();
-    return;
-  }
-
-  const w=anchoCarrusel();
-  const salida=direccion>0?-w:w;
-
-  actual.style.transition="transform .22s ease";
-  p.style.transition="transform .22s ease";
-
-  requestAnimationFrame(()=>{
-    actual.style.transform="translateX("+salida+"px)";
-    p.style.transform="translateX(0)";
-  });
-
-  await new Promise(resolve=>setTimeout(resolve,230));
-
-  const nuevoIndice=indicePruebaActual+direccion;
-  const nuevoId=ordenPruebas[nuevoIndice];
-
-  // La vista previa permanece encima mientras se carga el contenido real.
-  await abrir(nuevoId);
-
-  const nuevoActual=contenidoVisor();
-  nuevoActual.style.transition="none";
-  nuevoActual.style.transform="translateX(0)";
-  nuevoActual.style.opacity="1";
-
-  if(previewEl){
-    previewEl.remove();
-    previewEl=null;
-  }
-  previewDireccion=0;
-
-  requestAnimationFrame(()=>{
-    nuevoActual.style.transition="transform .22s ease";
-  });
-
-  precargarAdyacentes();
-}
-
-function regresarCarrusel(){
-  const actual=contenidoVisor();
-  const p=previewEl;
-  const w=anchoCarrusel();
-
-  if(actual){
-    actual.style.transition="transform .20s ease";
-    actual.style.transform="translateX(0)";
-  }
-
-  if(p){
-    p.style.transition="transform .20s ease";
-    p.style.transform="translateX("+(previewDireccion>0?w:-w)+"px)";
-    setTimeout(()=>{
-      if(previewEl===p){
-        p.remove();
-        previewEl=null;
-        previewDireccion=0;
-      }
-    },210);
-  }
-}
-
-function iniciarGestoVisor(event){
-  if(!event.touches || event.touches.length !== 1)return;
-
-  const t = event.touches[0];
-  toqueInicioX = t.clientX;
-  toqueInicioY = t.clientY;
-  toqueInicioTiempo = Date.now();
-  gestoHorizontal = false;
-  desplazamientoActual = 0;
-
-  quitarPreview();
-  precargarAdyacentes();
-
-  const c = contenidoVisor();
-  if(c){
-    c.style.transition = "none";
-    c.style.transform = "translateX(0)";
-    c.style.opacity = "1";
-  }
-}
-
-function moverGestoVisor(event){
-  if(toqueInicioX === null || toqueInicioY === null)return;
-  if(!event.touches || event.touches.length !== 1)return;
-
-  const t = event.touches[0];
-  const dx = t.clientX - toqueInicioX;
-  const dy = t.clientY - toqueInicioY;
-
-  if(!gestoHorizontal){
-    if(Math.abs(dx) < 10 && Math.abs(dy) < 10)return;
-
-    if(Math.abs(dy) >= Math.abs(dx)){
-      toqueInicioX = null;
-      toqueInicioY = null;
-      return;
-    }
-
-    gestoHorizontal = true;
-  }
-
-  if(!gestoHorizontal)return;
-  if(event.cancelable)event.preventDefault();
-
-  const direccion = dx < 0 ? 1 : -1;
-  const nuevoIndice = indicePruebaActual + direccion;
-  const hayAdyacente = nuevoIndice >= 0 && nuevoIndice < ordenPruebas.length;
-
-  let desplazamiento = dx;
-
-  if(!hayAdyacente){
-    desplazamiento = dx * 0.28;
-    quitarPreview();
-  }else{
-    asegurarPreview(direccion);
-  }
-
-  desplazamientoActual = desplazamiento;
-  posicionarPaginas(desplazamiento);
-}
-
-async function animarCambioPrueba(direccion){
-  await finalizarCambioCarrusel(direccion);
-}
-
-function terminarGestoVisor(event){
-  if(toqueInicioX === null || toqueInicioY === null){
-    return;
-  }
-
-  const dx = desplazamientoActual;
-  const dt = Date.now() - toqueInicioTiempo;
-
-  toqueInicioX = null;
-  toqueInicioY = null;
-  toqueInicioTiempo = 0;
-
-  const eraHorizontal = gestoHorizontal;
-  gestoHorizontal = false;
-  desplazamientoActual = 0;
-
-  const c = contenidoVisor();
-  if(!c)return;
-
-  if(!eraHorizontal){
-    regresarCarrusel();
-    return;
-  }
-
-  const umbral = Math.min(95, window.innerWidth * 0.22);
-
-  if(Math.abs(dx) >= umbral && dt <= 1400){
-    if(dx < 0){
-      animarCambioPrueba(1);
-    }else{
-      animarCambioPrueba(-1);
-    }
-  }else{
-    regresarCarrusel();
-  }
-}
-
-
-function actualizarBotonLimpiarBusqueda(){
-  document.getElementById("btnLimpiarBusqueda").classList.toggle(
-    "visible",
-    textoBusqueda.length>0
-  );
-}
-
-function alternarBusqueda(){
-  busquedaVisible=!busquedaVisible;
-
-  const barra=document.getElementById("barraBusqueda");
-  const btn=document.getElementById("btnBuscar");
-  const campo=document.getElementById("buscarPrueba");
-
-  barra.classList.toggle("visible",busquedaVisible);
-  btn.classList.toggle("activo",busquedaVisible);
-
-  if(busquedaVisible){
-    setTimeout(()=>campo.focus(),50);
-  }else{
-    textoBusqueda="";
-    campo.value="";
-    actualizarBotonLimpiarBusqueda();
-    lista();
-  }
-}
-
-
-function cerrarBusquedaAlAbrir(){
-  if(!busquedaVisible)return;
-
-  busquedaVisible=false;
-  textoBusqueda="";
-
-  const barra=document.getElementById("barraBusqueda");
-  const btn=document.getElementById("btnBuscar");
-  const campo=document.getElementById("buscarPrueba");
-
-  barra.classList.remove("visible");
-  btn.classList.remove("activo");
-  campo.value="";
-  actualizarBotonLimpiarBusqueda();
-}
-
-function limpiarBusqueda(){
-  textoBusqueda="";
-  const campo=document.getElementById("buscarPrueba");
-  campo.value="";
-  actualizarBotonLimpiarBusqueda();
-  lista();
-  campo.focus();
-}
-
-function edit(){
-  modoSeleccion=!modoSeleccion;
-  if(!modoSeleccion)seleccionadas.clear();
-  document.getElementById("lista").classList.toggle("modoSeleccion",modoSeleccion);
-  document.getElementById("btnEditar").classList.toggle("activo",modoSeleccion);
-  lista();
-}
-
-document.getElementById("btnBuscar").onclick=alternarBusqueda;
-document.getElementById("buscarPrueba").oninput=e=>{
-  textoBusqueda=String(e.target.value||"");
-  actualizarBotonLimpiarBusqueda();
-  lista();
-};
-document.getElementById("btnLimpiarBusqueda").onclick=limpiarBusqueda;
-document.getElementById("btnAgregar").onclick=()=>document.getElementById("selectorCarpeta").click();
-document.getElementById("selectorCarpeta").onchange=async e=>{const f=[...e.target.files];e.target.value="";if(f.length)await importar(f)};
-document.getElementById("btnEditar").onclick=edit;
-document.getElementById("btnBorrarSeleccion").onclick=borrarSeleccionadas;
-document.getElementById("btnCerrarVisor").onclick=cerrar;
-
-const visorGestos = document.getElementById("visor");
-visorGestos.addEventListener("touchstart", iniciarGestoVisor, {passive:true});
-visorGestos.addEventListener("touchmove", moverGestoVisor, {passive:false});
-visorGestos.addEventListener("touchend", terminarGestoVisor, {passive:true});
-visorGestos.addEventListener("touchcancel", terminarGestoVisor, {passive:true});
-
-document.addEventListener("keydown", event => {
-  if(!document.getElementById("visor").classList.contains("activo"))return;
-  if(event.key === "ArrowLeft") navegarPrueba(-1);
-  if(event.key === "ArrowRight") navegarPrueba(1);
-});
-window.addEventListener("resize",()=>{if(puntosActuales.length)dibujar(puntosActuales)});
-
-(async()=>{try{await abrirDB();await lista()}catch{msg("No se pudo abrir el almacenamiento local.")}if("serviceWorker"in navigator){try{await navigator.serviceWorker.register("./sw.js?v=11", { updateViaCache: "none" })}catch{}}})();
+function estabilidad(d){const V=60,R=1,U=.15,S=120;if(d.length<V)return{confirmada:false,voltaje:null,tiempo:null};const ps=new Array(d.length).fill(null),vs=new Array(d.length).fill(null);for(let i=V-1;i<d.length;i++){const g=regresion(d,i-V+1,i);if(g){ps[i]=g.pendiente*60;vs[i]=g.valor}}let min=d[0][1],imin=0,rec=false,c=0;for(let i=1;i<d.length;i++){if(d[i][1]<min){min=d[i][1];imin=i;rec=false;c=0}if(i<=imin)continue;if(!rec){if(d[i][1]-min>=R)rec=true;else continue}if(ps[i]!==null&&Math.abs(ps[i])<=U){c++;if(c>=S)return{confirmada:true,voltaje:vs[i]!==null?vs[i]:d[i][1],tiempo:d[i][0]}}else c=0}return{confirmada:false,voltaje:null,tiempo:null}}
+function analizar(d){if(!d.length)return{};let min=Number(d[0][1]),tmin=Number(d[0][0]);for(let i=1;i<d.length;i++){const v=Number(d[i][1]);if(Number.isFinite(v)&&v<min){min=v;tmin=Number(d[i][0])}}const e=estabilidad(d),meseta=e.confirmada?Number(e.voltaje):null,te=e.confirmada?Number(e.tiempo):null,rec=e.confirmada&&Number.isFinite(meseta)?meseta-min:null;return{minimo:min,tiempoMinimo:tmin,meseta,tiempoEstabilizacion:te,recuperacion:rec,estabilizada:e.confirmada}}
+function drawChart(canvas,d){const x=canvas.getContext("2d"),W=canvas.width,H=canvas.height,L=66,R=18,T=20,B=50,aw=W-L-R,ah=H-T-B;const TMAX=Math.max(1800,d.length?Math.ceil(d[d.length-1][0]/300)*300:1800);let vmin=117,vmax=132;if(d.length){let mi=d[0][1],ma=d[0][1];for(let i=1;i<d.length;i++){mi=Math.min(mi,d[i][1]);ma=Math.max(ma,d[i][1])}if(mi<117)vmin=Math.floor(mi/5)*5;if(ma>132)vmax=Math.ceil(ma/5)*5}if(vmax-vmin<10)vmin=vmax-10;x.clearRect(0,0,W,H);x.fillStyle="white";x.fillRect(0,0,W,H);x.font="14px Arial";const rango=vmax-vmin;let pv=1;if(rango>20&&rango<=30)pv=2;if(rango>30)pv=5;const primero=Math.ceil(vmin/pv)*pv;for(let v=primero;v<=vmax+.001;v+=pv){const y=T+((vmax-v)/(vmax-vmin))*ah;x.strokeStyle="#ddd";x.lineWidth=1;x.beginPath();x.moveTo(L,y);x.lineTo(L+aw,y);x.stroke();x.fillStyle="black";x.textAlign="right";x.fillText(v.toFixed(0)+" V",L-6,y+5)}const mm=Math.ceil(TMAX/60),pm=mm<=30?5:(mm<=60?10:15);for(let m=0;m<=mm;m+=pm){const s=m*60,xx=L+(s/TMAX)*aw;x.strokeStyle="#ddd";x.beginPath();x.moveTo(xx,T);x.lineTo(xx,T+ah);x.stroke();x.fillStyle="black";x.textAlign="center";x.fillText(m+"m",xx,H-18)}x.strokeStyle="black";x.lineWidth=2;x.beginPath();x.moveTo(L,T);x.lineTo(L,T+ah);x.lineTo(L+aw,T+ah);x.stroke();if(!d.length)return;const X=s=>L+(s/TMAX)*aw,Y=v=>T+((vmax-v)/(vmax-vmin))*ah;x.lineWidth=1.5;for(let i=1;i<d.length;i++){const[t1,v1]=d[i-1],[t2,v2]=d[i];x.strokeStyle=((v1+v2)/2<=110)?"red":"blue";x.beginPath();x.moveTo(X(t1),Y(v1));x.lineTo(X(t2),Y(v2));x.stroke()}}
+
+function iconSvg(name){const m={plus:'<svg viewBox="0 0 24 24"><path fill="currentColor" d="M11 4h2v7h7v2h-7v7h-2v-7H4v-2h7V4Z"/></svg>',search:'<svg viewBox="0 0 24 24"><path fill="currentColor" d="M10.5 4a6.5 6.5 0 1 0 3.98 11.64L19.84 21 21 19.84l-5.36-5.36A6.5 6.5 0 0 0 10.5 4Zm0 2a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9Z"/></svg>',building:'<svg viewBox="0 0 24 24"><path fill="currentColor" d="M4 3h16v18H4V3Zm2 2v14h4v-4h4v4h4V5H6Z"/></svg>'};return m[name]||""}
+function setTab(tab){if(!["pruebas","subestaciones","ajustes"].includes(tab))return;if(tab!=='pruebas'&&selectionMode){selectionMode=false;selectedTests.clear();updateSelectionUI()}currentTab=tab;$$('.section').forEach(e=>e.classList.remove('active'));$("#view"+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active');$$('.navBtn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));const titles={pruebas:"Pruebas",subestaciones:"Subestaciones",ajustes:"Ajustes"};$("#pageTitle").textContent=titles[tab];$("#eyebrow").textContent=tab==='ajustes'?"DC Viewer":"Banco de baterías";renderTopActions();if(tab==='pruebas')renderTests();if(tab==='subestaciones')renderStations();if(tab==='ajustes')renderSettings()}
+function renderTopActions(){const a=$("#topActions");a.innerHTML="";if(currentTab==='pruebas'){const add=document.createElement('button');add.className='iconBtn primary';add.innerHTML=iconSvg('plus');add.title='Cargar CSV';add.onclick=()=>$("#filePicker").click();const search=document.createElement('button');search.className='iconBtn';search.innerHTML=iconSvg('search');search.title='Buscar';search.onclick=()=>{searchVisible=!searchVisible;$("#searchWrap").classList.toggle('visible',searchVisible);if(searchVisible)setTimeout(()=>$("#searchInput").focus(),50);else{searchText='';$("#searchInput").value='';renderTests()}};a.append(add,search)}else if(currentTab==='subestaciones'){const add=document.createElement('button');add.className='iconBtn primary';add.innerHTML=iconSvg('plus');add.title='Nueva subestación';add.onclick=()=>openStationEditor(null,true);a.append(add)}}
+
+async function importFiles(files){const csv=[...files].filter(f=>f.name.toLowerCase().endsWith('.csv'));if(!csv.length){toast('No se encontraron archivos CSV.');return}const existing=await getAll(STORE_TESTS),names=new Set(existing.map(p=>norm(p.nombre))),hashes=new Set();for(const p of existing){try{hashes.add(p.hash||await hash(p.contenido||''))}catch{}}let added=0,dup=0,invalid=0;for(const f of csv){try{const texto=await f.text(),pts=csvPuntos(texto);if(!pts.length){invalid++;continue}const h=await hash(texto),n=norm(f.name);if(names.has(n)||hashes.has(h)){dup++;continue}const info=infoArchivo(f.name);await addOne(STORE_TESTS,{nombre:f.name,contenido:texto,hash:h,importado:Date.now(),muestras:pts.length,duracion:pts[pts.length-1][0],subestacion:info.subestacion,fecha:info.fecha});await ensureStation(info.subestacion);names.add(n);hashes.add(h);added++}catch{invalid++}}await renderTests();if(currentTab==='subestaciones')await renderStations();let s=added+" "+(added===1?'prueba agregada':'pruebas agregadas');if(dup)s+=' · '+dup+' duplicada'+(dup===1?'':'s')+' omitida'+(dup===1?'':'s');if(invalid)s+=' · '+invalid+' inválida'+(invalid===1?'':'s');toast(s,2600)}
+
+async function renderTests(){const cont=$("#testsList");let tests=await getAll(STORE_TESTS);tests.sort((a,b)=>(b.importado||0)-(a.importado||0));const q=norm(searchText);if(q)tests=tests.filter(t=>norm(t.nombre+' '+infoArchivo(t.nombre).subestacion).includes(q));if(!tests.length){cont.innerHTML='<div class="empty">'+(q?'No se encontraron pruebas.':'No hay pruebas guardadas. Usa + para importar archivos CSV.')+'</div>';return}const groups=new Map();for(const t of tests){const i=infoArchivo(t.nombre),k=norm(i.subestacion);if(!groups.has(k))groups.set(k,{key:k,name:i.subestacion,items:[]});groups.get(k).items.push(t)}cont.innerHTML='';for(const g of groups.values()){const box=document.createElement('div');box.className='stationGroup'+(openGroups.has(g.key)||q?' open':'');const head=document.createElement('button');head.className='stationHeader';head.type='button';head.innerHTML='<span class="stationIcon">'+iconSvg('building')+'</span><span class="stationHeaderText"><span class="stationName">'+esc(g.name)+'</span><span class="stationMeta">'+g.items.length+' '+(g.items.length===1?'prueba':'pruebas')+'</span></span><span class="chev">›</span>';head.onclick=()=>{box.classList.toggle('open');box.classList.contains('open')?openGroups.add(g.key):openGroups.delete(g.key)};const list=document.createElement('div');list.className='testList';for(const t of g.items){const row=document.createElement('div');row.className='testRow'+(selectedTests.has(Number(t.id))?' selected':'');row.dataset.id=t.id;const info=infoArchivo(t.nombre);row.innerHTML='<div class="checkDot"></div><button class="testButton" type="button"><div class="testName">'+esc(t.nombre)+'</div><div class="testMeta">'+esc(fechaBonita(info.fecha))+' · '+esc(ft(t.duracion))+'</div></button>';attachLongPress(row.querySelector('.testButton'),Number(t.id),()=>openRecord(g.key,info.fecha,Number(t.id)));row.querySelector('.checkDot').onclick=()=>toggleTestSelection(Number(t.id));list.appendChild(row)}box.append(head,list);cont.appendChild(box)}cont.classList.toggle('selectionMode',selectionMode);updateSelectionUI()}
+function attachLongPress(el,id,normalClick){let timer=null,longDone=false,startX=0,startY=0;const cancel=()=>{clearTimeout(timer);timer=null};el.addEventListener('pointerdown',e=>{longDone=false;startX=e.clientX;startY=e.clientY;timer=setTimeout(()=>{longDone=true;enterSelection(id);if(navigator.vibrate)navigator.vibrate(25)},520)});el.addEventListener('pointermove',e=>{if(Math.abs(e.clientX-startX)>10||Math.abs(e.clientY-startY)>10)cancel()});el.addEventListener('pointerup',e=>{cancel();if(longDone){e.preventDefault();return}if(selectionMode)toggleTestSelection(id);else normalClick()});el.addEventListener('pointercancel',cancel);el.addEventListener('contextmenu',e=>e.preventDefault())}
+function enterSelection(id){selectionMode=true;selectedTests.add(Number(id));renderTests()}
+function toggleTestSelection(id){id=Number(id);selectionMode=true;selectedTests.has(id)?selectedTests.delete(id):selectedTests.add(id);if(!selectedTests.size)selectionMode=false;renderTests()}
+function exitSelection(){selectionMode=false;selectedTests.clear();renderTests()}
+function updateSelectionUI(){const bar=$("#selectionBar");bar.classList.toggle('visible',selectionMode&&selectedTests.size>0);$("#selectionCount").textContent=selectedTests.size+' '+(selectedTests.size===1?'seleccionada':'seleccionadas')}
+async function deleteSelected(){if(!selectedTests.size)return;const n=selectedTests.size;if(!confirm('¿Eliminar '+n+' '+(n===1?'prueba seleccionada':'pruebas seleccionadas')+'?'))return;for(const id of [...selectedTests])await delOne(STORE_TESTS,id);exitSelection();toast('Prueba'+(n===1?'':'s')+' eliminada'+(n===1?'':'s'));await renderStations()}
+
+async function renderStations(){const cont=$("#stationsList"),stations=await getAll(STORE_STATIONS),tests=await getAll(STORE_TESTS),records=await getAll(STORE_RECORDS);stations.sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));if(!stations.length){cont.innerHTML='<div class="empty">No hay subestaciones todavía. Se crearán automáticamente al importar una prueba, o puedes agregarlas con +.</div>';return}cont.innerHTML='';for(const s of stations){const tc=tests.filter(t=>stationKey(t.nombre)===s.clave).length,rc=records.filter(r=>r.clave===s.clave).length,b=s.banco||{},c=s.cargador||{};const btn=document.createElement('button');btn.className='stationCardBtn';btn.type='button';const bankLine=[b.marca,b.tipo,b.capacidad?b.capacidad+' Ah':''].filter(Boolean).join(' · ')||'Datos del banco pendientes';const chargerLine=[c.marca,c.modelo].filter(Boolean).join(' · ')||'Datos del cargador pendientes';btn.innerHTML='<span class="stationIcon">'+iconSvg('building')+'</span><span class="stationSummary"><span class="title">S.E. '+esc(s.nombre)+'</span><span class="sub">'+esc(bankLine)+'<br>'+esc(chargerLine)+'</span><span class="badges"><span class="badge blue">'+tc+' descarga'+(tc===1?'':'s')+'</span><span class="badge green">'+rc+' lectura'+(rc===1?'':'s')+'</span>'+(b.numCeldas?'<span class="badge">'+esc(b.numCeldas)+' celdas</span>':'')+'</span></span><span class="chev">›</span>';btn.onclick=()=>openStation(s.clave);cont.appendChild(btn)}}
+
+async function historyForStation(clave){const tests=(await getAll(STORE_TESTS)).filter(t=>stationKey(t.nombre)===clave),records=(await getAll(STORE_RECORDS)).filter(r=>r.clave===clave),map=new Map();function get(date){const key=date||'';if(!map.has(key))map.set(key,{fecha:date||'',tests:[],record:null});return map.get(key)}for(const t of tests){const info=infoArchivo(t.nombre);get(info.fecha).tests.push(t)}for(const r of records)get(r.fecha).record=r;return [...map.values()].sort((a,b)=>{if(!a.fecha)return 1;if(!b.fecha)return-1;return b.fecha.localeCompare(a.fecha)})}
+async function openStation(clave){currentStationKey=clave;const s=await getOne(STORE_STATIONS,clave);if(!s)return;$("#stationOverlayTitle").textContent='S.E. '+s.nombre;await renderStationDetail();openOverlay('stationOverlay')}
+async function renderStationDetail(){const s=await getOne(STORE_STATIONS,currentStationKey);if(!s)return;const body=$("#stationOverlayBody"),b=s.banco||{},c=s.cargador||{},hist=await historyForStation(s.clave);let html='<div class="heroTitle">S.E. '+esc(s.nombre)+'</div><div class="sectionLabel">Identificación</div><div class="infoCard"><div class="infoGrid">'+infoItem('Banco · Marca',b.marca)+infoItem('Banco · Tipo',b.tipo)+infoItem('Capacidad',b.capacidad?b.capacidad+' Ah':'')+infoItem('Año',b.anio)+infoItem('Número de celdas',b.numCeldas||'')+infoItem('Construcción',b.sellada?'Sellada':'Abierta')+'<div class="infoWide" style="height:1px;background:var(--line);margin:4px 0"></div>'+infoItem('Cargador · Marca',c.marca)+infoItem('Cargador · Modelo',c.modelo)+infoItem('Capacidad',c.capacidad)+infoItem('N.º de serie',c.serie)+'</div></div><div class="sectionLabel">Historial</div><div id="stationHistory"></div>';body.innerHTML=html;const h=$("#stationHistory");if(!hist.length){h.innerHTML='<div class="empty">No hay registros para esta subestación.</div>'}else for(const item of hist){const btn=document.createElement('button');btn.className='historyItem';btn.type='button';const tags=[];if(item.tests.length)tags.push('<span class="badge blue">Descarga'+(item.tests.length>1?' ×'+item.tests.length:'')+'</span>');if(item.record)tags.push('<span class="badge green">Lecturas</span>');btn.innerHTML='<div class="historyMain"><div class="historyDate">'+esc(fechaBonita(item.fecha))+'</div><div class="badges">'+tags.join('')+'</div><div class="historyMeta">'+(item.record&&item.record.voltajeBanco?('Banco: '+esc(item.record.voltajeBanco)+' V'):'')+'</div></div><span class="chev">›</span>';btn.onclick=()=>openRecord(s.clave,item.fecha,item.tests[0]?.id||null);h.appendChild(btn)}}
+function infoItem(label,value){return'<div class="infoItem"><small>'+esc(label)+'</small><strong>'+(String(value||'').trim()?esc(value):'—')+'</strong></div>'}
+
+async function openRecord(clave,fecha,testId=null){currentStationKey=clave;currentRecordDate=fecha||'';currentRecordTestId=testId;await renderRecordDetail();openOverlay('recordOverlay')}
+async function renderRecordDetail(){const s=await getOne(STORE_STATIONS,currentStationKey);if(!s)return;const hist=await historyForStation(currentStationKey),item=hist.find(x=>x.fecha===currentRecordDate)||{fecha:currentRecordDate,tests:[],record:null};if(currentRecordTestId){const exact=item.tests.find(t=>Number(t.id)===Number(currentRecordTestId));if(exact)item.tests=[exact,...item.tests.filter(t=>t!==exact)]}const r=item.record,b=s.banco||{};$("#recordOverlayTitle").textContent='S.E. '+s.nombre;let html='<div class="recordTop"><div><div class="heroTitle">Registro del banco</div><div class="recordDate">'+esc(fechaBonita(currentRecordDate))+'</div></div></div><div class="actionCard"><button id="editReadingsAction" class="pillBtn '+(r?'':'primary')+'" type="button">'+(r?'Editar lecturas':'Agregar lecturas')+'</button></div>';
+if(r){const filled=(r.lecturas||[]).filter(x=>x.voltaje||x.densidad||x.temperatura||x.agua).length;html+='<div class="subsectionHeader">Lecturas en flotación</div><div class="readingSummary"><div class="readingStats"><div class="stat"><small>Voltaje del banco</small><strong>'+(r.voltajeBanco?esc(r.voltajeBanco)+' V':'—')+'</strong></div><div class="stat"><small>Celdas con datos</small><strong>'+filled+' / '+esc(b.numCeldas||60)+'</strong></div><div class="stat"><small>Tipo</small><strong>'+(b.sellada?'Sellada':'Abierta')+'</strong></div></div>'+(r.observaciones?'<div style="margin-top:12px;color:var(--muted);font-size:13px">'+esc(r.observaciones)+'</div>':'')+'</div>'+renderReadingsDetails(r,b)}else{html+='<div class="subsectionHeader">Lecturas en flotación</div><div class="empty">No se capturaron lecturas individuales para esta fecha.</div>'}
+if(item.tests.length){const t=item.tests[0],d=csvPuntos(t.contenido||''),a=analizar(d);html+='<div class="subsectionHeader">Prueba de descarga</div>'+(item.tests.length>1?'<div class="subsectionHelp">Hay '+item.tests.length+' pruebas de descarga asociadas a esta fecha.</div>':'')+'<div class="chartCard"><canvas id="recordChart" width="1200" height="650"></canvas><div id="recordStability" class="stability">ESTABILIZADO — '+(a.meseta!==null&&a.meseta!==undefined?Number(a.meseta).toFixed(2)+' V':'')+'</div></div><div class="subsectionHeader">Resultados de descarga</div><div class="resultCard">'+resultRow('1 min',fv(valorSegundo(d,60)))+resultRow('10 min',fv(valorSegundo(d,600)))+resultRow('20 min',fv(valorSegundo(d,1200)))+resultRow('30 min',fv(valorSegundo(d,1800)))+resultRow('Mínimo',fv(a.minimo))+resultRow('Tiempo del mínimo',ft(a.tiempoMinimo))+'</div><div class="subsectionHeader">Recuperación post-descarga</div><div class="subsectionHelp">Valores posteriores al punto mínimo de la descarga.</div><div class="resultCard">'+resultRow('Meseta',fv(a.meseta))+resultRow('Tiempo de estabilización',ft(a.tiempoEstabilizacion))+resultRow('Recuperación',a.recuperacion===null||a.recuperacion===undefined?'--':(a.recuperacion>=0?'+':'')+Number(a.recuperacion).toFixed(2)+' V')+'</div>'}else{html+='<div class="subsectionHeader">Prueba de descarga</div><div class="empty">No se cargó una prueba de descarga para esta fecha.</div>'}
+$("#recordOverlayBody").innerHTML=html;$("#editReadingsAction").onclick=()=>openReadingsEditor(currentStationKey,currentRecordDate||todayISO());if(item.tests.length){const d=csvPuntos(item.tests[0].contenido||'');requestAnimationFrame(()=>{const c=$("#recordChart");if(c)drawChart(c,d);const a=analizar(d),e=$("#recordStability");if(e)e.style.display=a.estabilizada?'block':'none'})}}
+function resultRow(k,v){return'<div class="resultRow"><span>'+esc(k)+'</span><span class="resultValue">'+esc(v)+'</span></div>'}
+function renderReadingsDetails(r,b){const sealed=!!b.sellada,rows=(r.lecturas||[]).map(x=>'<div class="readingLine '+(sealed?'sealed':'')+'"><div class="cellNo">'+esc(x.celda)+'</div><div>'+esc(x.voltaje||'—')+'</div>'+(sealed?'':'<div>'+esc(x.densidad||'—')+'</div>')+'<div>'+esc(x.temperatura||'—')+'</div>'+(sealed?'':'<div>'+esc(x.agua||'—')+'</div>')+'</div>').join('');return'<details class="readingsDetails"><summary>Ver lecturas por celda</summary><div class="readingTable"><div class="readingHead '+(sealed?'sealed':'')+'"><div>Celda</div><div>V</div>'+(sealed?'':'<div>Dens.</div>')+'<div>°C</div>'+(sealed?'':'<div>Agua L</div>')+'</div>'+rows+'</div></details>'}
+
+function openOverlay(id){const e=$("#"+id);e.classList.add('active');e.setAttribute('aria-hidden','false');document.body.style.overflow='hidden'}
+function closeOverlay(id){const e=$("#"+id);e.classList.remove('active');e.setAttribute('aria-hidden','true');e.style.transform='';e.style.opacity='';document.body.style.overflow=$$('.overlay.active').length?'hidden':'';if(id==='stationOverlay')currentStationKey=null}
+function installSwipeUpBack(id){const e=$("#"+id);let sy=null,sx=null,tracking=false;e.addEventListener('touchstart',ev=>{if(!e.classList.contains('active')||ev.touches.length!==1)return;const t=ev.touches[0];if(t.clientY<window.innerHeight-130)return;sy=t.clientY;sx=t.clientX;tracking=true;e.classList.remove('animating')},{passive:true});e.addEventListener('touchmove',ev=>{if(!tracking||ev.touches.length!==1)return;const t=ev.touches[0],dy=t.clientY-sy,dx=t.clientX-sx;if(dy<0&&Math.abs(dy)>Math.abs(dx)*1.2){if(ev.cancelable)ev.preventDefault();e.style.transform='translateY('+Math.max(-120,dy*.35)+'px)';e.style.opacity=String(Math.max(.72,1+dy/700))}},{passive:false});e.addEventListener('touchend',ev=>{if(!tracking)return;tracking=false;const t=ev.changedTouches[0],dy=t.clientY-sy,dx=t.clientX-sx;e.classList.add('animating');if(dy<-85&&Math.abs(dy)>Math.abs(dx)*1.15){e.style.transform='translateY(-100%)';e.style.opacity='0';setTimeout(()=>{e.classList.remove('animating');closeOverlay(id)},220)}else{e.style.transform='translateY(0)';e.style.opacity='1';setTimeout(()=>e.classList.remove('animating'),220)}},{passive:true})}
+
+function installRecordHorizontalNav(){const e=$("#recordOverlay");let sx=null,sy=null,dxNow=0,horizontal=false;e.addEventListener('touchstart',ev=>{if(!e.classList.contains('active')||ev.touches.length!==1)return;if(ev.target.closest('.readingTable,.sheet'))return;const t=ev.touches[0];if(t.clientY>window.innerHeight-130)return;sx=t.clientX;sy=t.clientY;dxNow=0;horizontal=false;const body=$("#recordOverlayBody");body.style.transition='none'},{passive:true});e.addEventListener('touchmove',ev=>{if(sx===null||ev.touches.length!==1)return;const t=ev.touches[0],dx=t.clientX-sx,dy=t.clientY-sy;if(!horizontal){if(Math.abs(dx)<10&&Math.abs(dy)<10)return;if(Math.abs(dx)<=Math.abs(dy)){sx=null;sy=null;return}horizontal=true}dxNow=dx;if(ev.cancelable)ev.preventDefault();const body=$("#recordOverlayBody");body.style.transform='translateX('+dx+'px)';body.style.opacity=String(Math.max(.58,1-Math.abs(dx)/700))},{passive:false});e.addEventListener('touchend',async ev=>{if(sx===null)return;const body=$("#recordOverlayBody");const dx=dxNow;sx=null;sy=null;dxNow=0;if(!horizontal){body.style.transform='';body.style.opacity='';return}horizontal=false;body.style.transition='transform .2s ease,opacity .2s ease';if(Math.abs(dx)<80){body.style.transform='translateX(0)';body.style.opacity='1';setTimeout(()=>body.style.transition='',210);return}const hist=await historyForStation(currentStationKey),idx=hist.findIndex(x=>x.fecha===currentRecordDate),dir=dx<0?1:-1,next=idx+dir;if(idx<0||next<0||next>=hist.length){body.style.transform='translateX(0)';body.style.opacity='1';setTimeout(()=>body.style.transition='',210);return}body.style.transform='translateX('+(dx<0?-window.innerWidth:window.innerWidth)+'px)';body.style.opacity='.35';setTimeout(async()=>{currentRecordDate=hist[next].fecha;currentRecordTestId=hist[next].tests[0]?.id||null;await renderRecordDetail();const nb=$("#recordOverlayBody");nb.style.transition='none';nb.style.transform='translateX('+(dx<0?window.innerWidth:-window.innerWidth)+'px)';nb.style.opacity='.35';requestAnimationFrame(()=>{nb.style.transition='transform .22s ease,opacity .22s ease';nb.style.transform='translateX(0)';nb.style.opacity='1';setTimeout(()=>nb.style.transition='',230)})},205)},{passive:true})}
+
+async function openStationEditor(clave,isNew=false){editingNewStation=isNew;editingStationKey=clave;let s=isNew?defaultStation(''):await getOne(STORE_STATIONS,clave);if(!s)return;const b=s.banco||{},c=s.cargador||{};$("#stationForm").innerHTML='<div class="formSection"><div class="formTitle">Subestación</div><div class="formCard"><div class="field"><label>Nombre / abreviación</label><input id="fStationName" type="text" value="'+esc(s.nombre)+'" '+(!isNew?'readonly':'')+' placeholder="Ej. MVA"></div></div></div><div class="formSection"><div class="formTitle">Banco de baterías</div><div class="formCard"><div class="field"><label>Marca</label><input id="fBatteryBrand" type="text" value="'+esc(b.marca)+'"></div><div class="field"><label>Tipo</label><input id="fBatteryType" type="text" value="'+esc(b.tipo)+'"></div><div class="field"><label>Capacidad (Ah)</label><input id="fBatteryCapacity" inputmode="decimal" type="text" value="'+esc(b.capacidad)+'"></div><div class="field"><label>Año</label><input id="fBatteryYear" inputmode="numeric" type="text" value="'+esc(b.anio)+'"></div><div class="field"><label>Número de celdas</label><input id="fCellCount" inputmode="numeric" type="number" min="1" max="200" value="'+esc(b.numCeldas||60)+'"></div><div class="field"><label>Construcción</label><select id="fSealed"><option value="0" '+(!b.sellada?'selected':'')+'>Abierta</option><option value="1" '+(b.sellada?'selected':'')+'>Sellada</option></select></div></div></div><div class="formSection"><div class="formTitle">Cargador</div><div class="formCard"><div class="field"><label>Marca</label><input id="fChargerBrand" type="text" value="'+esc(c.marca)+'"></div><div class="field"><label>Modelo</label><input id="fChargerModel" type="text" value="'+esc(c.modelo)+'"></div><div class="field"><label>Capacidad</label><input id="fChargerCapacity" type="text" value="'+esc(c.capacidad)+'"></div><div class="field"><label>N.º de serie</label><input id="fChargerSerial" type="text" value="'+esc(c.serie)+'"></div></div></div>';openSheet('stationSheet')}
+async function saveStation(){const name=$("#fStationName").value.trim();if(!name){toast('Escribe el nombre de la subestación.');return}const clave=editingNewStation?norm(name):editingStationKey;if(editingNewStation&&await getOne(STORE_STATIONS,clave)){toast('Esa subestación ya existe.');return}const old=editingNewStation?defaultStation(name):await getOne(STORE_STATIONS,clave);old.nombre=name;old.banco={marca:$("#fBatteryBrand").value.trim(),tipo:$("#fBatteryType").value.trim(),capacidad:$("#fBatteryCapacity").value.trim(),anio:$("#fBatteryYear").value.trim(),numCeldas:Math.max(1,Number($("#fCellCount").value)||60),sellada:$("#fSealed").value==='1'};old.cargador={marca:$("#fChargerBrand").value.trim(),modelo:$("#fChargerModel").value.trim(),capacidad:$("#fChargerCapacity").value.trim(),serie:$("#fChargerSerial").value.trim()};old.actualizado=Date.now();await putOne(STORE_STATIONS,old);closeSheet('stationSheet');toast('Datos guardados.');await renderStations();if(currentStationKey===clave)await renderStationDetail()}
+
+async function openReadingsEditor(clave,fecha){editingReadingsKey={clave,fecha};const s=await getOne(STORE_STATIONS,clave);if(!s)return;const b=s.banco||{},id=recordId(clave,fecha),r=await getOne(STORE_RECORDS,id)||{id,clave,subestacion:s.nombre,fecha,voltajeBanco:'',observaciones:'',lecturas:[]};const by=new Map((r.lecturas||[]).map(x=>[Number(x.celda),x])),count=Math.max(1,Number(b.numCeldas)||60),sealed=!!b.sellada;let rows='';for(let i=1;i<=count;i++){const x=by.get(i)||{celda:i,voltaje:'',densidad:'',temperatura:'',agua:''};rows+='<div class="cellEditRow '+(sealed?'sealed':'')+'" data-cell="'+i+'"><div class="cellN">'+i+'</div><input data-field="voltaje" inputmode="decimal" placeholder="V" value="'+esc(x.voltaje)+'">'+(sealed?'':'<input data-field="densidad" inputmode="decimal" placeholder="Dens." value="'+esc(x.densidad)+'">')+'<input data-field="temperatura" inputmode="decimal" placeholder="°C" value="'+esc(x.temperatura)+'">'+(sealed?'':'<input data-field="agua" inputmode="decimal" placeholder="L" value="'+esc(x.agua)+'">')+'</div>'}$("#readingsForm").innerHTML='<div class="formSection"><div class="formTitle">Datos generales</div><div class="formCard"><div class="field"><label>Fecha</label><input id="rDate" type="date" value="'+esc(fecha)+'"></div><div class="field"><label>Voltaje del banco en flotación</label><input id="rBankVoltage" inputmode="decimal" type="text" value="'+esc(r.voltajeBanco)+'" placeholder="V"></div><div class="field"><label>Observaciones</label><textarea id="rNotes" placeholder="Opcional">'+esc(r.observaciones)+'</textarea></div></div></div><div class="formSection"><div class="formTitle">Lecturas por celda</div><div class="cellsEditor"><div class="cellHeader '+(sealed?'sealed':'')+'"><div>Celda</div><div>V</div>'+(sealed?'':'<div>Dens.</div>')+'<div>°C</div>'+(sealed?'':'<div>Agua L</div>')+'</div>'+rows+'</div></div>';openSheet('readingsSheet')}
+async function saveReadings(){const {clave,fecha:oldDate}=editingReadingsKey||{};if(!clave)return;const s=await getOne(STORE_STATIONS,clave),newDate=$("#rDate").value||oldDate||todayISO();const oldId=recordId(clave,oldDate),newId=recordId(clave,newDate),lecturas=[];$$('#readingsForm .cellEditRow').forEach(row=>{const get=f=>row.querySelector('[data-field="'+f+'"]')?.value.trim()||'';lecturas.push({celda:Number(row.dataset.cell),voltaje:get('voltaje'),densidad:get('densidad'),temperatura:get('temperatura'),agua:get('agua')})});const rec={id:newId,clave,subestacion:s.nombre,fecha:newDate,voltajeBanco:$("#rBankVoltage").value.trim(),observaciones:$("#rNotes").value.trim(),lecturas,actualizado:Date.now()};await putOne(STORE_RECORDS,rec);if(oldId!==newId)await delOne(STORE_RECORDS,oldId);closeSheet('readingsSheet');currentRecordDate=newDate;toast('Lecturas guardadas.');if($("#recordOverlay").classList.contains('active'))await renderRecordDetail();if($("#stationOverlay").classList.contains('active'))await renderStationDetail();await renderStations()}
+function openSheet(id){const e=$("#"+id);e.classList.add('active');e.setAttribute('aria-hidden','false')}
+function closeSheet(id){const e=$("#"+id);e.classList.remove('active');e.setAttribute('aria-hidden','true')}
+
+async function addRecordFromStation(){if(!currentStationKey)return;openReadingsEditor(currentStationKey,todayISO())}
+
+async function renderSettings(){const tests=await getAll(STORE_TESTS),stations=await getAll(STORE_STATIONS),records=await getAll(STORE_RECORDS);$("#versionValue").textContent=APP_VERSION;$("#countTests").textContent=tests.length;$("#countStations").textContent=stations.length;$("#countRecords").textContent=records.length;if(swRegistration?.waiting){swUpdateReady=true;$("#updateStatus").textContent='Actualización lista para instalar';$("#btnUpdate").textContent='Actualizar'}else if(!swUpdateReady){$("#updateStatus").textContent='Buscar una versión nueva';$("#btnUpdate").textContent='Comprobar'}}
+async function checkUpdate(){if(!('serviceWorker'in navigator)){toast('Las actualizaciones automáticas no están disponibles.');return}try{if(!swRegistration)swRegistration=await navigator.serviceWorker.getRegistration();if(swRegistration?.waiting){installUpdate();return}$("#updateStatus").textContent='Buscando actualización…';$("#btnUpdate").textContent='Buscando';await swRegistration?.update();await new Promise(r=>setTimeout(r,1200));if(swRegistration?.waiting){swUpdateReady=true;$("#updateStatus").textContent='Actualización lista para instalar';$("#btnUpdate").textContent='Actualizar';toast('Hay una actualización disponible.')}else{$("#updateStatus").textContent='DC Viewer está actualizado';$("#btnUpdate").textContent='Comprobar';toast('No se encontró una versión nueva.')}}catch{$("#updateStatus").textContent='No se pudo comprobar la actualización';$("#btnUpdate").textContent='Reintentar'}}
+function installUpdate(){if(!swRegistration?.waiting)return;$("#updateStatus").textContent='Instalando actualización…';swRegistration.waiting.postMessage({type:'SKIP_WAITING'})}
+async function setupSW(){if(!('serviceWorker'in navigator))return;try{swRegistration=await navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'});if(swRegistration.waiting){swUpdateReady=true}swRegistration.addEventListener('updatefound',()=>{const w=swRegistration.installing;if(!w)return;w.addEventListener('statechange',()=>{if(w.state==='installed'&&navigator.serviceWorker.controller){swUpdateReady=true;if(currentTab==='ajustes')renderSettings();toast('Actualización disponible en Ajustes.') }})});navigator.serviceWorker.addEventListener('controllerchange',()=>location.reload())}catch{}}
+
+$$('.navBtn').forEach(b=>b.onclick=()=>setTab(b.dataset.tab));$("#filePicker").onchange=async e=>{const f=[...e.target.files];e.target.value='';if(f.length)await importFiles(f)};$("#searchInput").oninput=e=>{searchText=e.target.value;renderTests()};$("#clearSearch").onclick=()=>{searchText='';$("#searchInput").value='';renderTests()};$("#exitSelection").onclick=exitSelection;$("#deleteSelection").onclick=deleteSelected;$$('[data-close]').forEach(b=>b.onclick=()=>closeOverlay(b.dataset.close));$$('[data-sheet-close]').forEach(b=>b.onclick=()=>closeSheet(b.dataset.sheetClose));$("#editStationBtn").onclick=()=>openStationEditor(currentStationKey,false);$("#saveStationBtn").onclick=saveStation;$("#saveReadingsBtn").onclick=saveReadings;$("#addRecordFab").onclick=addRecordFromStation;$("#btnUpdate").onclick=checkUpdate;installSwipeUpBack('stationOverlay');installSwipeUpBack('recordOverlay');installRecordHorizontalNav();
+window.addEventListener('resize',()=>{const c=$("#recordChart");if(c&&currentStationKey&&currentRecordDate)renderRecordDetail()});
+(async()=>{try{await openDB();await syncStations();await renderTests();await renderStations();await renderSettings();await setupSW()}catch(e){console.error(e);toast('No se pudo abrir el almacenamiento local.',3000)}})();
 </script>
 </body>
 </html>
