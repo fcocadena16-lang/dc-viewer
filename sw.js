@@ -1,4 +1,4 @@
-const CACHE="dc-viewer-shell-v13-7";
+const CACHE="dc-viewer-shell-v13-8";
 const SHELL=["./","./index.html","./manifest.webmanifest","./apple-touch-icon-v2.png","./icon-192-v2.png","./icon-512-v2.png"];
 self.addEventListener("install",event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(SHELL)))});
 self.addEventListener("activate",event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim()});
